@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+
+  "name": "Cookies Obliterator",
+  "description": "Cookies Obliterator",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "cookiemanager.html"
+  },
+  "permissions": [
+    "tabs",
+    "activeTab",
+	"cookies",
+	"identity",
+	"unlimitedStorage",
+	"<all_urls>"
+  ],
+  "content_scripts": [{
+	"matches": ["<all_urls>"],
+	"css":["jquery-ui.min.css","cookiemanager.css"],
+	"js": ["jquery-1.12.3.min.js","jquery-ui.js","cookiemanager.js"]
+  }]
+}
