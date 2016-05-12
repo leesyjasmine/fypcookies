@@ -38,8 +38,8 @@
 		  <h3>Manual Remove</h3>
 		  <p><small>** compulsory</small></p>
 		  <div id="removeCookieManual">
+		  	  <p>Cookie URL**: <input type="text" class="rInputDetails" id="rCookieURL" value=""></p>
 			  <p>Cookie Name**: <input type="text" class="rInputDetails" id="rCookieName"></p>
-			  <p>Cookie Domain: <input type="text" class="inputDetails" id="rCookieDomain" value=""></p>
 			  <p>Cookie Path: <input type="text" class="inputDetails" id="rCookiePath" value=""></p>
 			  <input type="submit" id="submitRemove" value="Submit"/>
 		  </div>
@@ -53,17 +53,18 @@
 	  <p><small>** compulsory</small></p>
 		  <div id="addCookie">
 			  <div>
+			  	<p>Cookie URL**: <input type="text" class="aInputDetails" id="aCookieURL"></p>
 				<p>Cookie Name**: <input type="text" class="aInputDetails" id="aCookieName"></p>
 				<p>Cookie Value**: 
 					</br><textarea class="aInputDetails" id="aCookieValue" cols=39 rows=5></textarea>
 				</p>
 				<p>Cookie Life**:
 					<fieldset id="getDateContainer">
+						<p><input type="radio" value="2" name="getDate" id="bySession"/>Session</p>
 						<p><input type="radio" value="0" name="getDate" id="byDate"/>Date mm/dd/yyyy : <input type="text"class="datepicker" id="dateByDate" disabled /></p>
 						<p><input type="radio" value="1" name="getDate" id="byDay"/>Days : <input type="text" id="dateByDay" size="5" disabled /></p>
 					</fieldset>
 				</p>
-				<p>Cookie Domain: <input type="text" class="inputDetails" id="aCookieDomain"></p>
 				<p>Cookie Path: <input type="text" class="inputDetails" id="aCookiePath"></p>
 				</br><input type="submit" id="submitAdd" value="Submit"/>
 			  </div>
