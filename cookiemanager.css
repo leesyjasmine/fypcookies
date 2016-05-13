@@ -9,14 +9,21 @@ body{
 	height:auto;
 }
 #tabs{
-	max-width:50%;
+	min-width:430px;
+	background-color:white;	
 }
-
+ 
+#tabs .ui-tabs-nav { 
+    background: transparent; 
+    border-width: 0px 0px 1px 0px; 
+} 
 /*-----------------------------------------------------*/
 #aCookieValue{
 	resize:none;
 }
-
+#getDateContainer{
+	width:70%;
+}
 /*-----------------------------------------------------*/
 /* Auto Remove Toggle Button ---------------------------*/
 .autoRemoveOff{
