@@ -14,10 +14,10 @@ $(function (){
 		var className = ".rInputDetails";
 		var okay = allFilledUp(className);
 		 if (okay ===true){
+			  var cookieURL = $('#rcookieURL').val();
 			  var cookieName = $('#rCookieName').val();
-			  var cookieDomain = $('#rCookieDomain').val();
 			  var cookiePath = $('#rCookiePath').val();
-			  createCookie(cookieName,"",-1,cookieDomain,cookiePath);
+			  createCookie(cookieURL,cookieName,"",-1,cookiePath);
 			  displayStatus('#rStatus', "Success Remove", cookieName);
 			  reset(className);
 			  reset("#removeCookie .inputDetails"); 
@@ -48,6 +48,7 @@ $(function (){
 		var okay = allFilledUp(className);
 		var dateFilledUp = checkDateFilledUp();
 		if (okay ===true && dateFilledUp === true){
+			  var cookieURL = $('#aCookieURL').val();
 			  var cookieName = $('#aCookieName').val();
 			  var cookieValue = $('#aCookieValue').val();
 			  var cookieLifetime;
@@ -55,10 +56,11 @@ $(function (){
 					cookieLifetime = $('#dateByDate').datepicker( "getDate" );
 				}else if($('#byDay').is(':checked') ){
 					cookieLifetime = $('#dateByDay').val();
+				}else if ($('#bySession').is(':checked')){
+					//do nothing
 				}
-			  var cookieDomain = $('#aCookieDomain').val();
 			  var cookiePath = $('#aCookiePath').val();
-			  createCookie(cookieName,cookieValue,cookieLifetime,cookieDomain,cookiePath);
+			  createCookie(cookieURL,cookieName,cookieValue,cookieLifetime,cookiePath);
 			  displayStatus('#aStatus', "Success Add", cookieName);
 			  reset(className); 
 			  reset("#addCookie .inputDetails"); 
@@ -74,54 +76,70 @@ $(function (){
 			 	$('#dateByDate').attr('disabled',true);
 				$('#dateByDay').attr('disabled',false);
 				$('#dateByDate').val('');
-			 }
+			 }else if($('#bySession').is(':checked') ){
+				$('#dateByDate').attr('disabled',true);
+				$('#dateByDay').attr('disabled',true);
+				$('#dateByDate').val('');
+				$('#dateByDay').val('');
+			  }
 		}); 
 		function checkDateFilledUp(){
 			var dateFilledUp = true;
-			if((($('#byDate').is(':checked'))=== false) && (($('#byDay').is(':checked'))=== false)){
-				$('#byDate').toggle( "highlight",function(){$('#byDate').show();});
-				$('#byDay').toggle( "highlight",function(){$('#byDay').show();});
+			if (!($('input[name=getDate]:checked').length)) {
+				$('#getDateContainer').toggle( "highlight",function(){$('#getDateContainer').show();});
 				dateFilledUp=false;
+			}else{
+				if (!($('#bySession').is(':checked'))){
+					if (($('#byDate').is(':checked'))&&($('#dateByDate').datepicker( "getDate" ) === null)){
+						$('#dateByDate').toggle( "highlight",function(){$('#dateByDate').show();});
+						dateFilledUp=false;
+					}
+					else if (($('#byDay').is(':checked'))&& ($('#dateByDay').val().length === 0)){
+						$('#dateByDay').toggle( "highlight",function(){$('#dateByDay').show();});
+						dateFilledUp=false;
+					}
+				}
 			}
-			var date1 = $('#dateByDate').datepicker( "getDate" );
-			var date2 = $('#dateByDay').val();
-			if((date1 === null) && (date2.length === 0)){
-				if ($('#byDate').is(':checked')){
-					$('#dateByDate').toggle( "highlight",function(){$('#dateByDate').show();});
-				}
-				else if ($('#byDay').is(':checked')){
-					$('#dateByDay').toggle( "highlight",function(){$('#dateByDay').show();});
-				}
-				else{
-					$('#dateByDate').toggle( "highlight",function(){$('#dateByDate').show();});
-					$('#dateByDay').toggle( "highlight",function(){$('#dateByDay').show();});
-				}
-				dateFilledUp=false;
-			}
-			
 			return dateFilledUp;
 		}
 	
   //UTILITIES*************************************************************
-  function createCookie(name,value,lifetime,domain,path){
+  function createCookie(url,name,value,lifetime,path){
 	//https: //www.sitepoint.com/community/t/trying-to-set-a-cookie-in-chrome/8718/2
 		var cookieExpire;
-		var lifetimeType = typeof lifetime;
-		if ((lifetimeType === "string")||(lifetimeType==="number")){ // by days or set to expire
+		var session = false;
+		var lifetimeType = typeof lifetime;	
+		if (lifetimeType === "undefined"){
+			session = true;
+			cookieExpire="";
+		}else if ((lifetimeType === "string")||(lifetimeType==="number")){ 
 			var date = new Date();
 			date.setTime(date.getTime() + (lifetime * 24 * 60 * 60 * 1000));
 			cookieExpire = date.toUTCString();
 		}else if (lifetimeType === "object"){ // by date
 			cookieExpire = lifetime.toUTCString();
 		}
-		var freshCookie = name + "=" + value + ";expires=" +cookieExpire;
-		if (domain.length !== 0 && domain !== "null"){
-			freshCookie += ";domain=" + domain;
-		}
+		var cookiePath= "\\";
 		if(path.length !== 0 && path !== "null"){
-			freshCookie +=";path=" + path;
+			cookiePath = path;
 		}
-		document.cookie = freshCookie;
+chrome.cookies.set({
+				url: "doubleclick.net", 
+				domain: "doubleclick.net", 
+
+				name: "Hello", 
+				//expirationDate: cookieExpire, 
+				value: "hello",
+				path: "/",
+			});/*
+			chrome.cookies.set({
+				url: url, 
+				name: name, 
+				expirationDate: cookieExpire, 
+				value: value,
+				path: cookiePath,
+			});*/
+
   }
   function isANumber(strVariable){
 	var isNum = (!isNaN(strVariable));
@@ -172,13 +190,13 @@ $(function (){
 		  autoSize:true
 		});
 		function resetAddDate(){
+			($('input[name=getDate]:checked')).prop('checked',false);	
 			resetDateElement('#dateByDate','#byDate');
 			resetDateElement('#dateByDay','#byDay');
 		}
-		function resetDateElement(deById, checkById){
+		function resetDateElement(deById){
 			$(deById).val('');
 			$(deById).attr('disabled',true);
-			$(checkById).prop('checked',false);
 		}
 // MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
