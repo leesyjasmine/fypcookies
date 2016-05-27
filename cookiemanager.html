@@ -2,12 +2,7 @@
 <!--http: //api.jqueryui.com/1.8/tabs/ -->
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Cookie Obliterator</title>
-  <link rel="stylesheet" href="jquery-ui.min.css">
-  <script src="jquery-1.12.3.min.js"></script>
-  <script src="jquery-ui.js"></script>
-  <!-- 
+<!-- 
   // jquery ui is 1.11.4 version
   // jquery is 1.12.3 version
   //Icon:
@@ -15,9 +10,17 @@
   Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.
   flaticon.com</a> is licensed by <a href="http://creativecommons.org
   /licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+  //jqplugins datetimepicker http: //xdsoft.net/jqplugins/datetimepicker/
   -->
+  <meta charset="utf-8">
+  <title>Cookie Obliterator</title>
+  <script src="jquery-1.12.3.min.js"></script>
+  <script src="jquery-ui.js"></script>
+  <script src="jquery.datetimepicker.full.min.js"></script>  
   <script type="text/javascript" src="cookiemanager.js"></script>  
-  <link rel="stylesheet" type="text/css" href="cookiemanager.css" />
+  <link rel="stylesheet" href="jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="jquery.datetimepicker.min.css"/ >
+<link rel="stylesheet" type="text/css" href="cookiemanager.css" />
 </head>
 <body>
 <div id="tabs">
@@ -30,7 +33,7 @@
   </ul>
   <div id="removeCookie">
 		<h2>Remove Cookie</h2>
-		  <h3>Auto Remove</h3>
+		  <h3>Auto Session Remove</h3>
 		  <div id="autoRemove">
 			<button id="autoRemoveButton" value="OFF">OFF</button>
 		  </div>
@@ -38,9 +41,10 @@
 		  <h3>Manual Remove</h3>
 		  <p><small>** compulsory</small></p>
 		  <div id="removeCookieManual">
-		  	  <p>Cookie URL**: <input type="text" class="rInputDetails" id="rCookieURL" value=""></p>
-			  <p>Cookie Name**: <input type="text" class="rInputDetails" id="rCookieName"></p>
-			  <p>Cookie Path: <input type="text" class="inputDetails" id="rCookiePath" value=""></p>
+		  	  <p>URL**:<input type="text" class="compulsary" name="url"></p>
+			  <p><small>e.g. https://.github.com/</small></p>
+			  <p>Name**: <input type="text" class="compulsary" name="name"></p>
+			  <p>Store ID: <input type="text" name="storeId"></p>
 			  <input type="submit" id="submitRemove" value="Submit"/>
 		  </div>
 		  <div>
@@ -51,27 +55,33 @@
   <div id="addCookie">
 	  <h2>Add Cookie</h2>
 	  <p><small>** compulsory</small></p>
-		  <div id="addCookie">
-			  <div>
-			  	<p>Cookie URL**: <input type="text" class="aInputDetails" id="aCookieURL"></p>
-				<p>Cookie Name**: <input type="text" class="aInputDetails" id="aCookieName"></p>
-				<p>Cookie Value**: 
-					</br><textarea class="aInputDetails" id="aCookieValue" cols=39 rows=5></textarea>
-				</p>
-				<p>Cookie Life**:
-					<fieldset id="getDateContainer">
-						<p><input type="radio" value="2" name="getDate" id="bySession"/>Session</p>
-						<p><input type="radio" value="0" name="getDate" id="byDate"/>Date mm/dd/yyyy : <input type="text"class="datepicker" id="dateByDate" disabled /></p>
-						<p><input type="radio" value="1" name="getDate" id="byDay"/>Days : <input type="text" id="dateByDay" size="5" disabled /></p>
-					</fieldset>
-				</p>
-				<p>Cookie Path: <input type="text" class="inputDetails" id="aCookiePath"></p>
-				</br><input type="submit" id="submitAdd" value="Submit"/>
-			  </div>
-		  </div>
-		  <div>
-			<p id="aStatus"></p>
-		  </div>
+	  <div>
+		<p>Domain**: <input type="text" class="compulsary" name="domain" ></p>
+		<p>Name**: <input type="text" class="compulsary" name="name"></p>
+		<p>Value: </br><textarea name="value" cols=39 rows=5></textarea></p>
+		<p>Path: <input type="text" name="path" value="/"\></p>
+		<p>Store ID: <input type="text" name="storeId"></p>
+		<p>Lifetime:
+			<fieldset id="addDateContainer">
+				<p id="addDateDate"><input type="radio" name="lifetime" id="arDate">Date mm/dd/yyyy : <input type="text" class="datetimepicker" id="ardateValue" disabled /></p>
+				<p id="addDateDay"><input type="radio" name="lifetime"id="arDay">Days : <input type="text" size="5" id="ardayValue" disabled /></p>
+				<p id="addDateSession"><input type="radio" name="lifetime"id="arSession" checked>Session</p>
+			</fieldset>
+		</p>
+		<p>Secure: <input type="checkbox" name="secure"></p>
+		<p>HttpOnly: <input type="checkbox" name="httpOnly"></p>
+		<!-- 
+		<p>Same Site:
+			<select name="sameSite">
+				<option value="no_restriction">No Restriction<small> (default) </small></option>
+				<option value="Lax">Lax</option>
+				<option value="Strict">Strict</option>
+			</select>
+		</p>
+		-->
+		</br><input type="submit" id="submitAdd" value="Submit"/>
+	  </div>
+	  <div> <p id="aStatus"></p> </div>
   </div>
   
   <div id="modifyCookie">
