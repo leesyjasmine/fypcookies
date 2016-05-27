@@ -16,11 +16,12 @@
 	"cookies",
 	"identity",
 	"unlimitedStorage",
+	"notifications",
 	"<all_urls>"
   ],
   "content_scripts": [{
 	"matches": ["<all_urls>"],
-	"css":["jquery-ui.min.css","cookiemanager.css"],
-	"js": ["jquery-1.12.3.min.js","jquery-ui.js","cookiemanager.js"]
+	"css":["jquery-ui.min.css","jquery.datetimepicker.min.css","cookiemanager.css"],
+	"js": ["jquery-1.12.3.min.js","jquery-ui.js","jquery.datetimepicker.full.min.js","cookiemanager.js"]
   }]
 }
