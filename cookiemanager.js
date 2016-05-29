@@ -5,11 +5,29 @@ $(function (){
 //https://developer.chrome.com/extensions/cookies
 //https://developer.chrome.com/extensions/webRequest
 //https://www.chromium.org/developers/design-documents/extensions/proposed-changes/apis-under-development/proposal-chrome-extensions-cookies-api
-  $( "#tabs" ).tabs();
-  $('#autoRemove').addClass('autoRemoveOff'); // remove 
-  onlyNumberInput('#dateByDay'); // add
- 
-  //REMOVE=============================================
+  
+   //INITIALISATION*******************************************************
+    $( "#tabs" ).tabs();
+  	onlyNumberInput('#dateByDay'); // add
+	$( "#autoRemove" ).addClass('autoRemoveOff' ); // remove //default
+	restoreSessionOptions();
+	setAllCookiesToSession();
+		
+  //SAVE A SESSION OPTIONS************************************************
+	  function saveSessionOptions(option){
+		chrome.storage.sync.clear();
+		chrome.storage.sync.set({'inSession':option});	  
+	  }
+	  function restoreSessionOptions(){ // only use in initialisation
+	  	chrome.storage.sync.get('inSession',function(results){
+	  		if (!isundefinednull(results.inSession)){
+				if(results.inSession){
+				 	setAddSession();
+				}
+			}
+		});
+	  }
+  //REMOVE====================================================
 
 	 $('#submitRemove').click(function(){ 
 		var okay = allFilledUp('#removeCookieManual .compulsary');
@@ -28,19 +46,58 @@ $(function (){
 	  $('#autoRemoveButton').click(function(){
 	  //https: //bufferwall.com/petersirka/2015-03-12-tutorial-simple-html-toggle-button/
 			var status = $('#autoRemoveButton').val();
-			if (status === 'OFF'){
-				$('#autoRemoveButton').val('ON');
-				$('#autoRemoveButton').text('ON');
-				$( "#autoRemove" ).toggleClass( 'autoRemoveOn' );
-				//function to turn ON auto remove
-				
-			}else if (status === 'ON'){
-				$('#autoRemoveButton').val('OFF');
-				$('#autoRemoveButton').text('OFF');
-				$( "#autoRemove" ).toggleClass('autoRemoveOn' );
-				//function to turn OFF auto remove
+			if (status === 'ON'){
+				saveSessionOptions(false);
+				setRemoveSession();				
+			}else if (status === 'OFF'){
+				$('#autoRemoveConfirm').dialog('open');
 			}
 	  }); 
+	  $('#autoRemoveConfirm').dialog({
+	  	autoOpen: false,
+	  	resizable:false,
+	  	height:160,
+	  	modal: true,
+	  	buttons: {
+	  		'YES' : function(){
+	  			$( this ).dialog( "close" );
+	  			saveSessionOptions(true);
+	  			setAddSession();
+	  		},
+	  		'NO': function(){
+	  			$( this ).dialog( "close" );
+	  		}
+	  	}
+	  });
+	  function setAddSession(){
+		setAllCookiesToSession();
+		chrome.extension.getBackgroundPage().addSessionListener();
+		/*
+	  	chrome.cookies.onChanged.addListener(function(changeInfo){
+	  	// listener that always wait for new cookies added and change them to session
+	  		if (!changeInfo.removed){ 
+	  			changeToASessionCookie(changeInfo.cookie);
+	  		}	
+	  	});*/
+	  	$('#autoRemoveButton').val('ON');
+		$('#autoRemoveButton').text('ON');
+		$( "#autoRemove" ).toggleClass('autoRemoveOn');
+	  }
+	  function setRemoveSession(){
+	    chrome.extension.getBackgroundPage().removeSessionListener();
+	  	//chrome.cookies.onChanged.removeListener(function(){});
+	  	$('#autoRemoveButton').val('OFF');
+		$('#autoRemoveButton').text('OFF');
+		$( "#autoRemove" ).toggleClass('autoRemoveOn' );  
+	  }
+	  function setAllCookiesToSession(){
+	  	chrome.cookies.getAll({},function(cookieArray){
+	  		for (var i=0;i<cookieArray.length;i++){
+	  			chrome.extension.getBackgroundPage().changeToASessionCookie(cookieArray[i]);
+	  		}
+	  	});
+	  }	
+	  
     //ADD===============================================
 	$('#submitAdd').click(function(){ 
 		var okay = allFilledUp('#addCookie .compulsary');
@@ -74,7 +131,7 @@ $(function (){
 			  if (sameSite!=='no_restriction')
 			  		newCookie.sameSite = sameSite;
 			 */
-			  newCookie.url ='http'+((newCookie.securee)?'s':'')+'://' + newCookie.domain + newCookie.path;
+			  newCookie.url ='http'+((newCookie.secure)?'s':'')+'://' + newCookie.domain + newCookie.path;
 			  
 
 			  chrome.cookies.set(newCookie);
@@ -109,28 +166,13 @@ $(function (){
 				}
 			});
 		}); 
-		
-	
   //UTILITIES*************************************************************
-  /*
-  function createCookie(url,name,value,lifetime,path){
-	//https: //www.sitepoint.com/community/t/trying-to-set-a-cookie-in-chrome/8718/2
-		var newCookie={};
-		var cookieExpire;
-		var session = false;
-		var lifetimeType = typeof lifetime;	
-		if (lifetimeType === "undefined"){
-			session = true;
-			cookieExpire="";
-		}else if ((lifetimeType === "string")||(lifetimeType==="number")){ 
-			var date = new Date();
-			date.setTime(date.getTime() + (lifetime * 24 * 60 * 60 * 1000));
-			cookieExpire = date.toUTCString();
-		}else if (lifetimeType === "object"){ // by date
-			cookieExpire = lifetime.toUTCString();
-		}
-		var cookiePath= path;
-  }*/
+  function isundefinednull(value){
+	  var undefinednull = false;
+	  if (value === undefined || value === null || value ==='undefined' || value==='null')
+	  	undefinednull = true;
+	  return undefinednull;
+  }
   function isANumber(strVariable){
 	var isNum = (!isNaN(strVariable));
 	return isNum;
@@ -182,7 +224,7 @@ $(function (){
 		});
 		
 		function resetDateContainer(dateContainerID){
-			dateName=$(dateContainerID +" :input[type=radio]").attr('name');
+			var dateName=$(dateContainerID +" :input[type=radio]").attr('name');
 			($('input[name='+dateName+']:checked')).prop('checked',false);	
 			$(dateContainerID +" :input[type=text]").each(function(){
 				$(this).val('');
@@ -191,14 +233,14 @@ $(function (){
 			$(dateContainerID).find('input[id*=rSession]').prop('checked',true);
 		}
 		function checkDateFilledUp(dateContainerID){
-			dateName = $(dateContainerID).find('input[type=radio]').attr('name');
+			var dateName = $(dateContainerID).find('input[type=radio]').attr('name');
 			var dateFilledUp = true;
 			if (!($('input[name='+dateName+']:checked').length)) {
 				$(dateContainerID).toggle( "highlight",function(){$(dateContainerID).show();});
 				dateFilledUp=false;
 			}else{
 			  	checkedElementID=$('input[name='+dateName+']:checked').attr('id');
-				parentCheckedID = $('#'+checkedElementID).parent().attr('id');
+				var parentCheckedID = $('#'+checkedElementID).parent().attr('id');
 				var inputID = $('#'+parentCheckedID + ' input[type=text]').attr('id');
 				if (typeof inputID !== typeof undefined && inputID !== false){
 					inputID = '#'+inputID;
