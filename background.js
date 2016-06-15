@@ -1,14 +1,42 @@
-function addSessionListener(){
-	chrome.cookies.onChanged.addListener(function(changeInfo){
-	  	// listener that always wait for new cookies added and change them to session
-	  	if (!changeInfo.removed){ 
-	  		changeToASessionCookie(changeInfo.cookie);
-	  	}	
+chrome.browserAction.setBadgeBackgroundColor({
+	color: '#68D2A0'
+});
+var textBadge = 0;
+function setBadge(){
+	++textBadge;
+	var textBadgeStr='';
+	
+	if (textBadge > 99)
+		textBadgeStr='99+';
+	else
+		textBadgeStr=textBadge.toString();
+	chrome.browserAction.setBadgeText({
+		text: textBadgeStr
 	});
 }
-function removeSessionListener(){
-	chrome.cookies.onChanged.removeListener(function(){});
+function resetBadge(){
+	textBadge = 0;
+	chrome.browserAction.setBadgeText({
+		text: ''
+	});
 }
+function setSession(changeInfo){
+	  	// listener that always wait for new cookies added and change them to session
+		if (!changeInfo.removed){ 
+			if (!changeInfo.cookie.session){
+				setBadge();
+				changeToASessionCookie(changeInfo.cookie);	
+			}		
+	  	}	
+}
+function addSessionListener(){
+	chrome.cookies.onChanged.addListener(setSession);
+}
+function removeSessionListener(){
+	resetBadge();
+	chrome.cookies.onChanged.removeListener(setSession);
+}
+
 function changeToASessionCookie(currCookie){
 	var sessionCookie = copyAsSessionCookie(currCookie);
 	var removeCookie = copyAsRemoveCookie(currCookie);

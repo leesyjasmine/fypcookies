@@ -11,8 +11,7 @@ $(function (){
   	onlyNumberInput('#dateByDay'); // add
 	$( "#autoRemove" ).addClass('autoRemoveOff' ); // remove //default
 	restoreSessionOptions();
-	setAllCookiesToSession();
-		
+setAllCookiesToSession();
   //SAVE A SESSION OPTIONS************************************************
 	  function saveSessionOptions(option){
 		chrome.storage.sync.clear();
@@ -47,8 +46,8 @@ $(function (){
 	  //https: //bufferwall.com/petersirka/2015-03-12-tutorial-simple-html-toggle-button/
 			var status = $('#autoRemoveButton').val();
 			if (status === 'ON'){
-				saveSessionOptions(false);
 				setRemoveSession();				
+				saveSessionOptions(false);
 			}else if (status === 'OFF'){
 				$('#autoRemoveConfirm').dialog('open');
 			}
@@ -56,7 +55,7 @@ $(function (){
 	  $('#autoRemoveConfirm').dialog({
 	  	autoOpen: false,
 	  	resizable:false,
-	  	height:160,
+	  	height:178,
 	  	modal: true,
 	  	buttons: {
 	  		'YES' : function(){
@@ -70,25 +69,17 @@ $(function (){
 	  	}
 	  });
 	  function setAddSession(){
-		setAllCookiesToSession();
-		chrome.extension.getBackgroundPage().addSessionListener();
-		/*
-	  	chrome.cookies.onChanged.addListener(function(changeInfo){
-	  	// listener that always wait for new cookies added and change them to session
-	  		if (!changeInfo.removed){ 
-	  			changeToASessionCookie(changeInfo.cookie);
-	  		}	
-	  	});*/
 	  	$('#autoRemoveButton').val('ON');
 		$('#autoRemoveButton').text('ON');
 		$( "#autoRemove" ).toggleClass('autoRemoveOn');
+		setAllCookiesToSession();
+		chrome.extension.getBackgroundPage().addSessionListener();
 	  }
 	  function setRemoveSession(){
-	    chrome.extension.getBackgroundPage().removeSessionListener();
-	  	//chrome.cookies.onChanged.removeListener(function(){});
-	  	$('#autoRemoveButton').val('OFF');
+	    $('#autoRemoveButton').val('OFF');
 		$('#autoRemoveButton').text('OFF');
-		$( "#autoRemove" ).toggleClass('autoRemoveOn' );  
+		$( "#autoRemove" ).toggleClass('autoRemoveOn' );
+		chrome.extension.getBackgroundPage().removeSessionListener();
 	  }
 	  function setAllCookiesToSession(){
 	  	chrome.cookies.getAll({},function(cookieArray){
