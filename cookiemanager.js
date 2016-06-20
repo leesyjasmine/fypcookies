@@ -10,8 +10,7 @@ $(function (){
     $( "#tabs" ).tabs();
   	onlyNumberInput('#dateByDay'); // add
 	$( "#autoRemove" ).addClass('autoRemoveOff' ); // remove //default
-	restoreSessionOptions();
-setAllCookiesToSession();
+    restoreSessionOptions();
   //SAVE A SESSION OPTIONS************************************************
 	  function saveSessionOptions(option){
 		chrome.storage.sync.clear();
@@ -27,23 +26,9 @@ setAllCookiesToSession();
 		});
 	  }
   //REMOVE====================================================
-
-	 $('#submitRemove').click(function(){ 
-		var okay = allFilledUp('#removeCookieManual .compulsary');
-		 if (okay ===true){
-			var remCookie={};
-			remCookie.url = $('#removeCookieManual').find('input[name=url]').val();
-			remCookie.name = $('#removeCookieManual').find('input[name=name]').val();
-			storeId = $('#removeCookieManual').find('input[name=storeId]').val();
-			if (storeId.length!==0)
-				remCookie.storeId=storeId;
-			chrome.cookies.remove(remCookie);
-			displayStatus('#rStatus', successMsg + ' Remove', remCookie.name);
-			reset('#removeCookieManual');
-		 }
-	  });
 	  $('#autoRemoveButton').click(function(){
 	  //https: //bufferwall.com/petersirka/2015-03-12-tutorial-simple-html-toggle-button/
+			resetManualRemove('');
 			var status = $('#autoRemoveButton').val();
 			if (status === 'ON'){
 				setRemoveSession();				
@@ -88,7 +73,62 @@ setAllCookiesToSession();
 	  		}
 	  	});
 	  }	
+		//MANUAL REMOVE-------
+	  $('#chooseRemoveCookiesBox').hide();
 	  
+	  $('#manualRemoveShowCookies').click(function(){
+	  	$('#submitRemove').attr('disabled',false);
+	  	$('#submitRemoveAll').attr('disabled',false);
+	  	chrome.cookies.getAll({},function(cookieArray){
+			var appendStrArray = [];
+			for (var i = 0; i < cookieArray.length; i++){
+				var cookieName = cookieArray[i].name;
+				var cookieDomain = cookieArray[i].domain;
+				var cookieUrl = 'http'+((cookieArray[i].secure)?'s':'')+'://' + cookieArray[i].domain + cookieArray[i].path;
+				var aEntry = "<option value="+cookieName+" data-section="+cookieDomain+" data-description="+cookieUrl+">"+cookieName+"</option>";
+				appendStrArray.push(aEntry);
+			}
+			setShowCookies('chooseRemoveCookiesBox','chooseRemoveCookies',appendStrArray);
+		});
+	  });
+	  function setShowCookies(chooseCookiesBox,chooseCookies,appendStrArray){
+	  	$('#'+ chooseCookiesBox).empty();
+	  	$('#'+ chooseCookiesBox).append("<select id="+chooseCookies+" multiple='multiple'></select>");
+	  	if (appendStrArray.length <= 0){
+	  	resetManualRemove("No Cookies Found");
+	  	}else{
+	  		$.each( appendStrArray, function( key, value ) {
+	  			$('#'+ chooseCookies).append(value);
+			});
+			setTreeCheckbox('#'+chooseCookies);
+	  		$('#'+chooseCookiesBox).hide();
+	  		$('#'+chooseCookiesBox).show(500);
+		}
+	  }
+	  $('#submitRemove').click(function(){ 
+		$('#chooseRemoveCookies option:selected').each(function() {
+    		var remCookie={};
+			remCookie.url = $(this).attr('data-description');
+    		remCookie.name = $(this).val();
+    		chrome.cookies.remove(remCookie);
+		});
+	  	resetManualRemove("Success Remove");
+	  });
+	  $('#submitRemoveAll').click(function(){ 
+	  	chrome.cookies.getAll({},function(cookieArray){
+	  		for (var i = 0; i < cookieArray.length;i++){
+	  			var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
+	  			chrome.cookies.remove(remCookie);
+	  		}
+	  	});
+	  	resetManualRemove("Success Remove");
+	  });
+	  function resetManualRemove(displayMsg){
+	  	$('#submitRemove').attr('disabled',true);
+		$('#submitRemoveAll').attr('disabled',true);
+	  	$('#chooseRemoveCookiesBox').hide();
+		displayStatus('#rStatus', displayMsg,'');
+	  }
     //ADD===============================================
 	$('#submitAdd').click(function(){ 
 		var okay = allFilledUp('#addCookie .compulsary');
@@ -123,7 +163,6 @@ setAllCookiesToSession();
 			  		newCookie.sameSite = sameSite;
 			 */
 			  newCookie.url ='http'+((newCookie.secure)?'s':'')+'://' + newCookie.domain + newCookie.path;
-			  
 
 			  chrome.cookies.set(newCookie);
 			  
@@ -157,6 +196,7 @@ setAllCookiesToSession();
 				}
 			});
 		}); 
+	
   //UTILITIES*************************************************************
   function isundefinednull(value){
 	  var undefinednull = false;
@@ -205,6 +245,22 @@ setAllCookiesToSession();
   function displayStatus(statusVar, successMsg, checksumMsg){
     var statusMsg = successMsg +"\n" +checksumMsg;
     $(statusVar).fadeIn('slow').text(statusMsg).fadeOut(2000);
+  }
+  //REMOVE COOKIES MANUALBOX===========================================
+  function setTreeCheckbox(objectid){
+  	$(objectid).treeMultiselect({
+  	//http://www.jqueryscript.net/form/jQuery-Plugin-For-Multi-Selectable-Tree-Structure-Tree-Multiselect.html
+  	  	allowBatchSelection: true,
+ 		sortable: false,
+ 		collapsible:true,
+ 		freeze: false,
+ 		hideSidePanel:false,
+ 		onlyBatchSelection:false,
+ 		sectionDelimiter:'/',
+ 		showSectionOnSelected:true,
+ 		startCollapsed:true,
+ 		onChange:null
+  	});
   }
   //DATE====================================================
 		$.datetimepicker.setLocale('en');
