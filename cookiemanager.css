@@ -17,6 +17,7 @@ body{
     background: transparent; 
     border-width: 0px 0px 1px 0px; 
 } 
+
 /*-----------------------------------------------------*/
 #aCookieValue{
 	resize:none;
@@ -25,6 +26,11 @@ body{
 	width:70%;
 }
 /*-----------------------------------------------------*/
+.treecheckbox{
+	width: auto;
+    height: 200px;
+    overflow-y:scroll;
+}
 /* Auto Remove Toggle Button ---------------------------*/
 .autoRemoveOff{
 	border: 2px solid #C0C0C0;
@@ -59,8 +65,6 @@ body{
 .autoRemoveOff button:hover, .autoRemoveOn button:hover{
 	color: #181818;
 }
-/*-----------------------------------------------------*/
-
 
 /*-----------------------------------------------------*/
 
