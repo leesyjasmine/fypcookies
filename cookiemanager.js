@@ -301,6 +301,43 @@ $(function (){
 		}
 // MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$("#submitImport").click(function() {
+	 myFunction();
+
+}); 
+function myFunction(){
+	/*
+    var x = document.getElementById("frm1").find('input[name=fname').val();
+    var displayTxt = "";
+    var i;
+    for (i = 0; i < x.length ;i++) {
+        displayTxt += x.elements[i].value + "/";
+    }
+    */
+   //var x = $('#frm1').find('input[name="fname"]').val();
+   //var y = $('#frm1').find('input[name="lname"]').val();
+   var z = $('#jpaste').val();
+   //displayStatus("#importstatus",x,y,z);
+   //$("#importstatus").text(x+" "+y +" "+ z);
+   //here goes parsing function
+   var arr = JSON.parse(z);
+   var i;
+   var out = "<table>";
+   for (i=0;i<arr.length;i++){
+       out += "<tr><td>" +
+       arr[i].domain + "</td><td>" +
+       arr[i].expirationDate + "</td><td>" +
+       arr[i].hostOnly + "</td><td>" +
+       arr[i].httpOnly + "</td><td>" +
+       arr[i].name + "</td><td>" +
+       arr[i].path + "</td><td>" +
+       arr[i].storeId + "</td><td>" +
+       arr[i].id + "</td></tr>";
+   }
+   out += "</table>";
+   $("#importstatus").html(out);
+
+}
 // GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 });
