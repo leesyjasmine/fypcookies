@@ -98,19 +98,25 @@
   </div>
   
   
-  <div id="importCookie">
-	  <h2>Import Cookie</h2>
-	  <!--This is just a small text input/submit form. Backend code is still being integrated.-->
-	  <div id="importCookie">
-	  <h2>Import Cookie</h2>
-	  <form action="submitted.html">
-	  <textarea rows="4" cols="50">Paste contents of (JSON formatted) exported cookie file </textarea>
-	  <p>
-	  <input type="submit" value="Import">
-	  </p>
-	  </form>
+<div id="importCookie">
+	<h2>Import Cookie</h2>
+	
+	<!--<form id="frm1" action="form_action.asp">
+		First name: <input type="text" name="fname" value="Donald"><br>
+		Last name: <input type="text" name="lname" value="Duck"><br><br>
+		<input type="submit" value="Submit">
+	</form>
+        -->
+        <p>Click import to tabulate the JSON cookie.</p>
+        <textarea rows="4" cols="50" id="jpaste" form="frm1">Paste cookie here...</textarea>
 
-  </div>
+	<input type="submit" id="submitImport" value="Import!"/>
+
+	<div> <p id="importstatus"></p> </div>
+	
+	<!--This is just a small text input/submit form. Backend code is still being integrated.-->
+	
+</div>
   
   
   <div id="exportCookie">
