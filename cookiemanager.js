@@ -310,67 +310,68 @@ $(function () {
 
 	// MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	$('#submitModify').click(function () {
-		var okay = allFilledUp('#modifyCookie .compulsary');
-		var dateFilledUp = checkDateFilledUp('#modDateContainer');
-		if (okay && dateFilledUp) {
 
-			var modCookie = {};
+		var filter = {};
+		filter.url = 'http' + (($('#modifyCookie').find('input[name=secure]').is(':checked')) ? 's' : '') + '://' + $('#modifyCookie').find('input[name=domain]').val();
+		filter.name = $('#modifyCookie').find('input[name=name]').val();
 
-			modCookie.name = $('#modifyCookie').find('input[name=name]').val();
-			modCookie.domain = $('#modifyCookie').find('input[name=domain]').val();
-			modCookie.value = $('#modifyCookie').find('textarea[name=value]').val();
-			//(does not work) modCookie.path = $('#modifyCookie').find('input[name=path]').val();
-			//(does not work) modCookie.storeId = $('#modifyCookie').find('input[name=storeId]').val();
+		chrome.cookies.get(filter, function (oldCookie) {
 
-			/*
-			modCookie.value = chrome.cookies.get({
-			"url": modCookie.domain,
-			"name": modCookie.name
-			});
-			alert(modCookie.value);
-			 */
+			var okay = allFilledUp('#modifyCookie .compulsary');
+			var dateFilledUp = checkDateFilledUp('#modDateContainer');
+			
+			if (okay && dateFilledUp) {
 
-			if (isundefinednull(modCookie.value)) {
-				//var oldCookie = {};
-				var filter = {};
-				filter.url = "http://.netflix.com";
-				filter.name = "NetflixId";
-				var value;
-				chrome.cookies.get(filter, function (oldCookie) {
-					value = oldCookie.value;
-					alert(value);
+				var modCookie = {};
+				modCookie.name = $('#modifyCookie').find('input[name=name]').val();
+				modCookie.domain = $('#modifyCookie').find('input[name=domain]').val();
+				modCookie.value = $('#modifyCookie').find('textarea[name=value]').val();
+				//modCookie.path = $('#modifyCookie').find('input[name=path]').val();
+				//(does not work) modCookie.storeId = $('#modifyCookie').find('input[name=storeId]').val();
+
+				/*
+				modCookie.value = chrome.cookies.get({
+				"url": modCookie.domain,
+				"name": modCookie.name
 				});
+				alert(modCookie.value);
+				 */
 
-			}
+				var lifetimeId = $('#modifyCookie').find('input[name=lifetime]:checked').attr('id');
 
-			var lifetimeId = $('#modifyCookie').find('input[name=lifetime]:checked').attr('id');
-			if (lifetimeId !== 'modSession') {
-				var lifetimeValueId = $('#' + lifetimeId).parent().find('input[type=text]').attr('id');
-				lifetimeValueId = '#' + lifetimeValueId;
-				if (lifetimeId === 'modDate') {
-					var lifetimeValue = $(lifetimeValueId).datetimepicker('getValue');
-					modCookie.expirationDate = lifetimeValue / 1000;
-				} else if (lifetimeId === 'modDay') {
-					var lifetimeValue = $(lifetimeValueId).val();
-					var date = new Date();
-					date.setTime(date.getTime() + (lifetimeValue * 24 * 60 * 60 * 1000));
-					modCookie.expirationDate = date / 1000;
+				if (lifetimeId !== 'modSession') {
+					var lifetimeValueId = $('#' + lifetimeId).parent().find('input[type=text]').attr('id');
+					lifetimeValueId = '#' + lifetimeValueId;
+					if (lifetimeId === 'modDate') {
+						var lifetimeValue = $(lifetimeValueId).datetimepicker('getValue');
+						modCookie.expirationDate = lifetimeValue / 1000;
+					} else if (lifetimeId === 'modDay') {
+						var lifetimeValue = $(lifetimeValueId).val();
+						var date = new Date();
+						date.setTime(date.getTime() + (lifetimeValue * 24 * 60 * 60 * 1000));
+						modCookie.expirationDate = date / 1000;
+					}
 				}
+
+				modCookie.secure = $('#modifyCookie').find('input[name=secure]').is(':checked');
+				modCookie.httpOnly = $('#modifyCookie').find('input[name=httpOnly]').is(':checked');
+
+				//extract old value if user does not enter new cookie value
+				if (!modCookie.value) {
+					modCookie.value = oldCookie.value;
+				}
+
+				modCookie.url = 'http' + ((modCookie.secure) ? 's' : '') + '://' + modCookie.domain;
+
+				chrome.cookies.set(modCookie);
+
+				displayStatus('#mStatus', "Cookie successfully modified: ", modCookie.name);
+				reset("#modifyCookie");
+
+				resetDateContainer('#modDateContainer');
+				$("#modifyCookie").find('input[name=path]').val('/');
 			}
-
-			modCookie.secure = $('#modifyCookie').find('input[name=secure]').is(':checked');
-			modCookie.httpOnly = $('#modifyCookie').find('input[name=httpOnly]').is(':checked');
-
-			modCookie.url = 'http' + ((modCookie.secure) ? 's' : '') + '://' + modCookie.domain;
-
-			chrome.cookies.set(modCookie);
-
-			displayStatus('#mStatus', "Cookie successfully modified!", modCookie.name);
-			reset("#modifyCookie");
-
-			resetDateContainer('#modDateContainer');
-			$("#modifyCookie").find('input[name=path]').val('/');
-		}
+		});
 	});
 
 	$("input[name=lifetime]:radio").click(function () {
