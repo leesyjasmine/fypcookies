@@ -92,10 +92,29 @@
 	  <div> <p id="aStatus"></p> </div>
   </div>
   
-  <div id="modifyCookie">
-	  <h2>Modify Cookie</h2>
-	  <!-- add modify cookie html here-->
-  </div>
+<div id="modifyCookie">
+                <h2>Modify Cookie</h2>
+                <!-- add modify cookie html here-->
+                <div>
+                    <p>Domain: <input type="text" class="compulsary" name="domain" ></p>
+                    <p>Name of cookie to edit: <input type="text" class="compulsary" name="name"></p>
+                    <p>New value: </br><textarea name="value" cols=39 rows=5></textarea></p>
+                    <!--<p>Path: <input type="text" name="path" value="/"\></p>-->
+                    <!--<p>Store ID: <input type="text" name="storeId"></p>-->
+                    <p>Lifetime:
+                    <fieldset id="modDateContainer">
+                        <p id="modDateDate"><input type="radio" name="lifetime" id="modDate">Date mm/dd/yyyy : <input type="text" class="datetimepicker" id="moddateValue" disabled /></p>
+                        <p id="modDateDay"><input type="radio" name="lifetime"id="modDay">Days : <input type="text" size="5" id="moddayValue" disabled /></p>
+                        <p id="modDateSession"><input type="radio" name="lifetime"id="modSession" checked>Session</p>
+                    </fieldset>
+                    </p>
+                    <p>Secure: <input type="checkbox" name="secure"></p>
+                    <p>HttpOnly: <input type="checkbox" name="httpOnly"></p>
+
+                    </br><input type="submit" id="submitModify" value="Submit"/>
+                </div>
+                <div> <p id="mStatus"></p> </div>
+            </div>
   
   
 <div id="importCookie">
