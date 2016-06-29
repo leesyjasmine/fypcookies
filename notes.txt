@@ -1,2 +1,0 @@
-1. manual input gui by autocomplete?
-2. tooltip
