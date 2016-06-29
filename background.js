@@ -1,3 +1,4 @@
+// badge
 chrome.browserAction.setBadgeBackgroundColor({
 	color: '#68D2A0'
 });
@@ -20,7 +21,22 @@ function resetBadge(){
 		text: ''
 	});
 }
-function setSession(changeInfo){
+/*background listener for auto session------------
+/*TESTING
+	if (chrome.cookies.onChanged.hasListeners()){
+	  	chrome.browserAction.setBadgeText({
+			text: 'y'
+		});
+	  }else{
+	  	chrome.browserAction.setBadgeText({
+			text: 'n'
+		});
+	}
+*/
+
+/*METHOD 1--------
+
+var setAutoSession = function setSession(changeInfo){
 	  	// listener that always wait for new cookies added and change them to session
 		if (!changeInfo.removed){ 
 			if (!changeInfo.cookie.session){
@@ -28,14 +44,48 @@ function setSession(changeInfo){
 				changeToASessionCookie(changeInfo.cookie);	
 			}		
 	  	}	
+};
+function addSessionListener(){
+	chrome.cookies.onChanged.addListener(setAutoSession);
+}
+function removeSessionListener(){
+	chrome.cookies.onChanged.removeListener(setAutoSession);
+	resetBadge();
+}
+---------------------*/
+
+//METHOD 2------- uses variable onSession as condition as well
+/*
+ method 1 has shown inconsistencies: poss reasons 
+ a) slower processing to remove listener; 
+ 	e.g. removelistener process is on hold till setsession completed
+ b) remove listener process interrupted by other onclick processes
+ 
+method 2 uses additional condition onSession var since background.js
+runs when application is enabled, will work.
+*/
+var onSession = false;
+function setSession(changeInfo){
+	  	// listener that always wait for new cookies added and change them to session
+		if (onSession){
+			if (!changeInfo.removed && !changeInfo.cookie.session){
+				changeToASessionCookie(changeInfo.cookie);	
+				setBadge();
+			}		
+	  	}else{
+			chrome.cookies.onChanged.removeListener(setSession);
+			resetBadge();
+	  	}
 }
 function addSessionListener(){
+	onSession = true;
 	chrome.cookies.onChanged.addListener(setSession);
 }
 function removeSessionListener(){
-	resetBadge();
-	chrome.cookies.onChanged.removeListener(setSession);
+	onSession = false;
+	setSession('');
 }
+//-------------------------*/
 
 function changeToASessionCookie(currCookie){
 	var sessionCookie = copyAsSessionCookie(currCookie);
@@ -77,7 +127,7 @@ function copyAsSessionCookie(oldCookie){
 }
 function isundefinednull(value){
 	  var undefinednull = false;
-	  if (value === undefined || value === null || value ==='undefined' || value==='null')
+	  if (value === undefined || value === null || value ==='undefined' || value==='null'||value.length<=0)
 	  	undefinednull = true;
 	  return undefinednull;
   }

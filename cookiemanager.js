@@ -8,7 +8,6 @@ $(function () {
 
 	//INITIALISATION*******************************************************
 	$("#tabs").tabs();
-	onlyNumberInput('#dateByDay'); // add
 	$("#autoRemove").addClass('autoRemoveOff'); // remove //default
 	restoreSessionOptions();
 	//SAVE A SESSION OPTIONS************************************************
@@ -20,7 +19,7 @@ $(function () {
 	}
 	function restoreSessionOptions() { // only use in initialisation
 		chrome.storage.sync.get('inSession', function (results) {
-			if (!isundefinednull(results.inSession)) {
+			if (!chrome.extension.getBackgroundPage().isundefinednull(results.inSession)) {
 				if (results.inSession) {
 					setAddSession();
 				}
@@ -28,10 +27,11 @@ $(function () {
 		});
 	}
 	//REMOVE====================================================
+	//AUTO REMOVE----------------------------------
 	$('#autoRemoveButton').click(function () {
 		//https: //bufferwall.com/petersirka/2015-03-12-tutorial-simple-html-toggle-button/
 		resetManualRemove('');
-		var status = $('#autoRemoveButton').val();
+		var status = $('#autoRemoveButton').text();
 		if (status === 'ON') {
 			setRemoveSession();
 			saveSessionOptions(false);
@@ -56,14 +56,12 @@ $(function () {
 		}
 	});
 	function setAddSession() {
-		$('#autoRemoveButton').val('ON');
 		$('#autoRemoveButton').text('ON');
 		$("#autoRemove").toggleClass('autoRemoveOn');
 		setAllCookiesToSession();
 		chrome.extension.getBackgroundPage().addSessionListener();
 	}
 	function setRemoveSession() {
-		$('#autoRemoveButton').val('OFF');
 		$('#autoRemoveButton').text('OFF');
 		$("#autoRemove").toggleClass('autoRemoveOn');
 		chrome.extension.getBackgroundPage().removeSessionListener();
@@ -75,12 +73,13 @@ $(function () {
 			}
 		});
 	}
-	//MANUAL REMOVE-------
+	//MANUAL REMOVE----------------------------------
+	//INITIALIZATION
 	$('#chooseRemoveCookiesBox').hide();
-
+	$('#submitRemove').hide();
+	//Display cookies for selection
 	$('#manualRemoveShowCookies').click(function () {
-		$('#submitRemove').attr('disabled', false);
-		$('#submitRemoveAll').attr('disabled', false);
+		$('#submitRemove').show();
 		chrome.cookies.getAll({}, function (cookieArray) {
 			var appendStrArray = [];
 			for (var i = 0; i < cookieArray.length; i++) {
@@ -107,105 +106,107 @@ $(function () {
 			$('#' + chooseCookiesBox).show(500);
 		}
 	}
+	//When user submit cookies for removal: either by selection/remove all
 	$('#submitRemove').click(function () {
-		$('#chooseRemoveCookies option:selected').each(function () {
-			var remCookie = {};
-			remCookie.url = $(this).attr('data-description');
-			remCookie.name = $(this).val();
-			chrome.cookies.remove(remCookie);
-		});
-		resetManualRemove("Success Remove");
+		if ($('#chooseRemoveCookies option:selected').length > 0) {
+			$('#chooseRemoveCookies option:selected').each(function () {
+				var remCookie = {};
+				remCookie.url = $(this).attr('data-description');
+				remCookie.name = $(this).val();
+				chrome.cookies.remove(remCookie);
+			});
+			resetManualRemove("Success Remove");
+		}
 	});
 	$('#submitRemoveAll').click(function () {
 		chrome.cookies.getAll({}, function (cookieArray) {
-			for (var i = 0; i < cookieArray.length; i++) {
-				var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
-				chrome.cookies.remove(remCookie);
+			if (cookieArray.length <= 0) {
+				resetManualRemove("No Cookies Found");
+			} else {
+				for (var i = 0; i < cookieArray.length; i++) {
+					var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
+						chrome.cookies.remove(remCookie);
+				}
+				resetManualRemove("Success Remove");
 			}
 		});
-		resetManualRemove("Success Remove");
 	});
 	function resetManualRemove(displayMsg) {
-		$('#submitRemove').attr('disabled', true);
-		$('#submitRemoveAll').attr('disabled', true);
+		$('#submitRemove').hide();
 		$('#chooseRemoveCookiesBox').hide();
 		displayStatus('#rStatus', displayMsg, '');
 	}
 	//ADD===============================================
 	$('#submitAdd').click(function () {
-		var okay = allFilledUp('#addCookie .compulsary');
-		var dateFilledUp = checkDateFilledUp('#addDateContainer');
-		if (okay === true && dateFilledUp === true) {
+		var okay = allFilledUp('#addCookie .compulsory');
+		var lifetimeFilledUp = checkLifetimeFilledUp('#addCookie input[name=lifetime]', '#addCookie fieldset');
+		if (okay === true && lifetimeFilledUp === true) {
 			var newCookie = {};
 			newCookie.domain = $('#addCookie').find('input[name=domain]').val();
 			newCookie.name = $('#addCookie').find('input[name=name]').val();
 			newCookie.value = $('#addCookie').find('textarea[name=value]').val();
-			newCookie.path = $('#addCookie').find('input[name=path]').val();
-			newCookie.storeId = $('#addCookie').find('input[name=storeId]').val();
+			newCookie.path = '/';
 
-			var lifetimeId = $('#addCookie').find('input[name=lifetime]:checked').attr('id');
-			if (lifetimeId !== 'arSession') {
-				var lifetimeValueId = $('#' + lifetimeId).parent().find('input[type=text]').attr('id');
-				lifetimeValueId = '#' + lifetimeValueId;
-				if (lifetimeId === 'arDate') {
-					var lifetimeValue = $(lifetimeValueId).datetimepicker('getValue');
-					newCookie.expirationDate = lifetimeValue / 1000;
-				} else if (lifetimeId === 'arDay') {
-					var lifetimeValue = $(lifetimeValueId).val();
-					var date = new Date();
-					date.setTime(date.getTime() + (lifetimeValue * 24 * 60 * 60 * 1000));
-					newCookie.expirationDate = date / 1000;
-				}
+			// extract lifetime
+			var checkedRadioElement = $('#addCookie').find('input[name=lifetime]:checked');
+			var lifetimeElement = checkedRadioElement.parent().find('input[type=text]');
+			if (lifetimeElement.attr('class') === 'datetimepicker') {
+				//by date
+				newCookie.expirationDate = lifetimeElement.datetimepicker('getValue') / 1000;
+
+			} else if (lifetimeElement.attr('class') === 'onlyNumbers') {
+				//by days
+				var date = new Date();
+				date.setTime(date.getTime() + (lifetimeElement.val() * 24 * 60 * 60 * 1000));
+				newCookie.expirationDate = date / 1000;
 			}
+			//---
 			newCookie.secure = $('#addCookie').find('input[name=secure]').is(':checked');
 			newCookie.httpOnly = $('#addCookie').find('input[name=httpOnly]').is(':checked');
-			/*
-			sameSite=$('#addCookie').find('select[name=sameSite] option:selected').val();
-			if (sameSite!=='no_restriction')
-			newCookie.sameSite = sameSite;
-		*/
-		newCookie.url = 'http' + ((newCookie.secure) ? 's' : '') + '://' + newCookie.domain + newCookie.path;
+			newCookie.url = 'http' + ((newCookie.secure) ? 's' : '') + '://' + newCookie.domain + newCookie.path;
 
-		chrome.cookies.set(newCookie);
+			chrome.cookies.set(newCookie);
 
-		displayStatus('#aStatus', "Success Add", newCookie.name);
-		reset("#addCookie");
-		resetDateContainer('#addDateContainer');
-		$("#addCookie").find('input[name=path]').val('/');
-	}
-});
-$("input[name=lifetime]:radio").click(function () {
-	checkedElementID = $('input[name=lifetime]:checked').attr('id');
-	$('#addDateContainer p').each(function () {
-		var pid = '#' + $(this).attr('id');
-		var checkID = $(pid + ' input[name=lifetime]').attr('id');
-		var inputID = $(pid + ' input[type=text]').attr('id');
-
-		var hasInputID = false;
-		if (typeof inputID !== typeof undefined && inputID !== false) {
-			hasInputID = true;
-		}
-		inputID = '#' + inputID;
-		if (checkID === checkedElementID) {
-			if (hasInputID) {
-				$(inputID).attr('disabled', false);
-			}
-		} else {
-			if (hasInputID) {
-				$(inputID).attr('disabled', true);
-				$(inputID).val('');
-			}
+			displayStatus('#aStatus', "Success Add", newCookie.name);
+			reset("#addCookie");
+			$("#addCookie").find('input[name=path]').val('/');
+			resetLifetime('#addCookie');
+			updateAutocompleteDomain();
 		}
 	});
-});
+	// input autocomplete for domain attribute
+	$("#addCookie").click(function () {
+		updateAutocompleteDomain();
+	});
+	function updateAutocompleteDomain() {
+		chrome.cookies.getAll({}, function (cookieArray) {
+			var domainArray = [];
+			for (var i = 0; i < cookieArray.length; i++) {
+				domainArray.push(cookieArray[i].domain);
+			}
+			domainArray = jQuery.uniqueSort(domainArray);
+			$("#addCookie input[name=domain]").autocomplete({
+				source : domainArray
+			});
+		});
+	}
+	//manipulate lifetime
+	$("#addCookie input[name=lifetime]:radio").click(function () {
+		$('#addCookie input[name=lifetime]:radio').each(function () {
+			var radioElement = $(this);
+			var inputElement = $(this).parent().find('input[type=text]');
+			if (!chrome.extension.getBackgroundPage().isundefinednull(typeof inputElement)) {
+				if (radioElement.is(':checked')) {
+					inputElement.attr('disabled', false);
+				} else {
+					inputElement.attr('disabled', true);
+					inputElement.val('');
+				}
+			}
+		});
+	});
 
 	//UTILITIES*************************************************************
-	function isundefinednull(value) {
-		var undefinednull = false;
-		if (value === undefined || value === null || value === 'undefined' || value === 'null')
-			undefinednull = true;
-		return undefinednull;
-	}
 	function isANumber(strVariable) {
 		var isNum = (!isNaN(strVariable));
 		return isNum;
@@ -230,22 +231,19 @@ $("input[name=lifetime]:radio").click(function () {
 		$(functionID).find('input[type=checkbox]').each(function () {
 			$(this).attr('checked', false);
 		});
-		$(functionID).find('select option:contains("default")').prop('selected', true);
 		$(functionID).find('input[type=radio]').each(function () {
 			$(this).attr('checked', false);
 		});
 	}
-	function onlyNumberInput(object) {
-		$(object).keyup(function () {
-			/*
-			http:// stackoverflow.com/questions/891696/jquery-what-is-the-best
-			-way-to-restrict-number-only-input-for-textboxes-all
-			*/
-			if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
-				this.value = this.value.replace(/[^0-9\.]/g, '');
-			}
-		});
-	}
+	$('.onlyNumbers').keyup(function () {
+		/*
+		http:// stackoverflow.com/questions/891696/jquery-what-is-the-best
+		-way-to-restrict-number-only-input-for-textboxes-all
+		 */
+		if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
+			this.value = this.value.replace(/[^0-9\.]/g, '');
+		}
+	});
 	function displayStatus(statusVar, successMsg, checksumMsg) {
 		var statusMsg = successMsg + "\n" + checksumMsg;
 		$(statusVar).fadeIn('slow').text(statusMsg).fadeOut(2000);
@@ -266,40 +264,43 @@ $("input[name=lifetime]:radio").click(function () {
 			onChange : null
 		});
 	}
+	//TOOLTIPS================================================
+	$('.tooltipElements').tooltip({
+		position : {
+			my : "center bottom-5",
+			at : "right top"
+		}
+	});
 	//DATE====================================================
 	$.datetimepicker.setLocale('en');
-	$('.datetimepicker').datetimepicker();
 	$('.datetimepicker').datetimepicker({
 		//http:// xdsoft.net/jqplugins/datetimepicker/
 		minDate : 0
 	});
-
-	function resetDateContainer(dateContainerID) {
-		var dateName = $(dateContainerID + " :input[type=radio]").attr('name');
-		($('input[name=' + dateName + ']:checked')).prop('checked', false);
-		$(dateContainerID + " :input[type=text]").each(function () {
-			$(this).val('');
-			$(this).attr('disabled', true);
+	//set session in lifetime container to default
+	function resetLifetime(lifetimeContainerName) { //e.g resetLifetime('#addCookie')
+		$(lifetimeContainerName).find('input[type=radio]').each(function () {
+			if (chrome.extension.getBackgroundPage().isundefinednull(($(this).parent().find('input[type=text]').attr('class')))) // session cookie
+				$(this).prop('checked', true);
+			else
+				$(this).parent().find('input[type=text]').attr('disabled', true);
 		});
-		$(dateContainerID).find('input[id*=rSession]').prop('checked', true);
 	}
-	function checkDateFilledUp(dateContainerID) {
-		var dateName = $(dateContainerID).find('input[type=radio]').attr('name');
+	function checkLifetimeFilledUp(lifetimeRadioElementName, lifetimeContainerElement) {
+		//e.g. to call: checkLifetimeFilledUp('#addCookie input[name=lifetime]','#addCookie fieldset')
 		var dateFilledUp = true;
-		if (!($('input[name=' + dateName + ']:checked').length)) {
-			$(dateContainerID).toggle("highlight", function () {
-				$(dateContainerID).show();
+		if (!($(lifetimeRadioElementName + ':checked').length)) {
+			$(lifetimeContainerElement).toggle("highlight", function () {
+				$(lifetimeContainerElement).show();
 			});
 			dateFilledUp = false;
 		} else {
-			checkedElementID = $('input[name=' + dateName + ']:checked').attr('id');
-			var parentCheckedID = $('#' + checkedElementID).parent().attr('id');
-			var inputID = $('#' + parentCheckedID + ' input[type=text]').attr('id');
-			if (typeof inputID !== typeof undefined && inputID !== false) {
-				inputID = '#' + inputID;
-				if ($(inputID).val().length === 0) {
-					$(inputID).toggle("highlight", function () {
-						$(inputID).show();
+			var checkedRadioElement = $(lifetimeRadioElementName + ':checked');
+			var lifetimeElement = checkedRadioElement.parent().find('input[type=text]');
+			if (!chrome.extension.getBackgroundPage().isundefinednull(lifetimeElement.attr('class'))) {
+				if ($(lifetimeElement).val().length === 0) {
+					$(lifetimeContainerElement).toggle("highlight", function () {
+						$(lifetimeContainerElement).show();
 					});
 					dateFilledUp = false;
 				}
@@ -309,166 +310,427 @@ $("input[name=lifetime]:radio").click(function () {
 	}
 
 	// MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	$('#submitModify').click(function () {
 
-		var filter = {};
-		filter.url = 'http' + (($('#modifyCookie').find('input[name=secure]').is(':checked')) ? 's' : '') + '://' + $('#modifyCookie').find('input[name=domain]').val();
-		filter.name = $('#modifyCookie').find('input[name=name]').val();
+	function getCurrentDomain() {
+		chrome.tabs.query({
+			currentWindow : true,
+			active : true
+		}, function (tabs) {
+			var url = new URL(tabs[0].url);
+			var currentDomain = url.hostname;
 
-		chrome.cookies.get(filter, function (oldCookie) {
+			//remove www else put prepend with '.', (does not work with forums.domain.com)
+			if (currentDomain.substring(0, 3) === "www") {
+				currentDomain = currentDomain.substring(3);
+			} else {
+				currentDomain = "." + currentDomain;
+			}
+			listCurrentCookies(currentDomain);
+		});
+	}
 
-			var okay = allFilledUp('#modifyCookie .compulsary');
-			var dateFilledUp = checkDateFilledUp('#modDateContainer');
-			
-			if (okay && dateFilledUp) {
+	function listCurrentCookies(retrievedDomain) {
+
+		chrome.cookies.getAll({
+			domain : retrievedDomain
+		}, function (cookieList) {
+			//sort domains alphabetically
+			cookieList.sort(function (a, b) {
+				var nameA = a.domain.toUpperCase();
+				var nameB = b.domain.toUpperCase();
+
+				if (nameA < nameB) {
+					return -1;
+				}
+				if (nameA > nameB) {
+					return 1;
+				}
+			});
+
+			//create accordion based on how many cookies were retrieved
+			for (i = 0; i < cookieList.length; i++) {
+
+				document.getElementById("myCounter").innerText = i;
+				document.getElementById("myDomain").innerHTML = "Domain: <input type='text' class='compulsory' name='domain' value=" + cookieList[i].domain + " disabled></p>";
+				document.getElementById("myPath").innerHTML = "Path: <input type='text' name='path' value=" + cookieList[i].path + " disabled></p>";
+				document.getElementById("myName").innerHTML = "Name: <input type='text' class='compulsory' name='name' value=" + cookieList[i].name + " disabled></p>";
+				document.getElementById("myValue").innerHTML = "Value: </br><textarea name='value' cols=39 rows=5>" + cookieList[i].value + "</textarea></p>";
+				document.getElementById("myExpiration").innerHTML =
+					"<p>Expiration:" +
+					"<fieldset id='modDateContainer" + i + "'>" +
+					"<p name='modDateDate'><input type='radio' name='lifetime2'>Date: <input type='text' class='datetimepicker' disabled/></p>" +
+					"<p name='modDateDay'><input type='radio' name='lifetime2'>Days: <input type='text' size='5' disabled/></p>" +
+					"<p name='modDateSession'><input type='radio' name='lifetime2' checked>Session</p>" +
+					"</fieldset>" +
+					"</p>";
+
+				var myPanel = document.getElementById("outerPanel");
+				var element = $("<button id='button" + i + "' class = 'accordion'>" + cookieList[i].domain + " | " + cookieList[i].name + "</button>" + myPanel.innerHTML);
+
+				$("#modifyCookie").append(element);
+			}
+
+			//Toggle between adding and removing the "active" and "show" classes when the user clicks on one of the "Section" buttons. The "active" class is used to add a background color to the current button when its belonging panel is open. The "show" class is used to open the specific accordion panel
+			var acc = document.getElementsByClassName("accordion");
+			var a;
+
+			for (a = 0; a < acc.length; a++) {
+				acc[a].onclick = function () {
+					this.classList.toggle("active");
+					this.nextElementSibling.classList.toggle("show");
+				}
+			}
+
+			$("input[name=lifetime2]:radio").click(function () {
+
+				//returns id of the selected element
+				checkedElementID = $('input[name=lifetime2]:checked').attr('id');
+
+				var m = $(this).parents(".panel").find("#myCounter").text();
+
+				$("#modDateContainer" + m + " p").each(function () {
+
+					var isChecked = $(this).find("input[name=lifetime2]:radio").is(":checked");
+					var textBox = $(this).find("input[type=text]");
+					var hasInputID = false;
+
+					if (typeof textBox !== typeof undefined) {
+						hasInputID = true;
+					}
+					if (isChecked) {
+
+						if (hasInputID) {
+							$(textBox).attr('disabled', false);
+						}
+					} else {
+						if (hasInputID) {
+							$(textBox).attr('disabled', true);
+							$(textBox).val('');
+						}
+					}
+				});
+			});
+
+			//original submitModify function
+			$(".modClass").click(function () {
+
+				var c = $(this).closest("div").find("#myCounter").text();
 
 				var modCookie = {};
-				modCookie.name = $('#modifyCookie').find('input[name=name]').val();
-				modCookie.domain = $('#modifyCookie').find('input[name=domain]').val();
-				modCookie.value = $('#modifyCookie').find('textarea[name=value]').val();
-				//modCookie.path = $('#modifyCookie').find('input[name=path]').val();
-				//(does not work) modCookie.storeId = $('#modifyCookie').find('input[name=storeId]').val();
 
-				/*
-				modCookie.value = chrome.cookies.get({
-				"url": modCookie.domain,
-				"name": modCookie.name
-				});
-				alert(modCookie.value);
-				*/
+				modCookie.domain = cookieList[c].domain;
+				modCookie.name = cookieList[c].name;
+				modCookie.value = $(this).closest("div").find('textarea[name=value]').val();
 
-				var lifetimeId = $('#modifyCookie').find('input[name=lifetime]:checked').attr('id');
+				var checkedRadioElement = $("#modDateContainer" + c).find("input[name=lifetime2]:checked");
+				var lifetimeElement = checkedRadioElement.parent().find("input[type=text]");
 
-				if (lifetimeId !== 'modSession') {
-					var lifetimeValueId = $('#' + lifetimeId).parent().find('input[type=text]').attr('id');
-					lifetimeValueId = '#' + lifetimeValueId;
-					if (lifetimeId === 'modDate') {
-						var lifetimeValue = $(lifetimeValueId).datetimepicker('getValue');
-						modCookie.expirationDate = lifetimeValue / 1000;
-					} else if (lifetimeId === 'modDay') {
-						var lifetimeValue = $(lifetimeValueId).val();
+				if (!chrome.extension.getBackgroundPage().isundefinednull(typeof lifetimeElement.val())) {
+
+					if (isANumber(lifetimeElement.val())) {
 						var date = new Date();
-						date.setTime(date.getTime() + (lifetimeValue * 24 * 60 * 60 * 1000));
+						date.setTime(date.getTime() + (lifetimeElement.val() * 24 * 60 * 60 * 1000));
 						modCookie.expirationDate = date / 1000;
+					} else {
+						modCookie.expirationDate = lifetimeElement.datetimepicker("getValue") / 1000;
 					}
 				}
 
-				modCookie.secure = $('#modifyCookie').find('input[name=secure]').is(':checked');
-				modCookie.httpOnly = $('#modifyCookie').find('input[name=httpOnly]').is(':checked');
-
-				//extract old value if user does not enter new cookie value
+				//extract old value if new value is not present (irrelevant with default value...)
 				if (!modCookie.value) {
-					modCookie.value = oldCookie.value;
+					modCookie.value = cookieList[c].value;
 				}
 
-				modCookie.url = 'http' + ((modCookie.secure) ? 's' : '') + '://' + modCookie.domain;
+				modCookie.secure = $($(this).closest("div").find('input[name=secure]')).is(':checked');
+				modCookie.httpOnly = $($(this).closest("div").find('input[name=httpOnly]')).is(':checked');
+				modCookie.url = "http://" + modCookie.domain;
 
 				chrome.cookies.set(modCookie);
 
-				displayStatus('#mStatus', "Cookie successfully modified: ", modCookie.name);
+				alert("Cookie has been successfully modified: " + modCookie.name);
 				reset("#modifyCookie");
 
-				resetDateContainer('#modDateContainer');
-				$("#modifyCookie").find('input[name=path]').val('/');
-			}
+			});
+
+			//DATE====================================================
+			$.datetimepicker.setLocale('en');
+			$('.datetimepicker').datetimepicker({
+				minDate : 0
+			});
 		});
-});
+	}
 
-$("input[name=lifetime]:radio").click(function () {
-	checkedElementID = $('input[name=lifetime]:checked').attr('id');
-	$('#modDateContainer p').each(function () {
-		var pid = '#' + $(this).attr('id');
-		var checkID = $(pid + ' input[name=lifetime]').attr('id');
-		var inputID = $(pid + ' input[type=text]').attr('id');
-
-		var hasInputID = false;
-		if (typeof inputID !== typeof undefined && inputID !== false) {
-			hasInputID = true;
-		}
-		inputID = '#' + inputID;
-		if (checkID === checkedElementID) {
-			if (hasInputID) {
-				$(inputID).attr('disabled', false);
-			}
-		} else {
-			if (hasInputID) {
-				$(inputID).attr('disabled', true);
-				$(inputID).val('');
-			}
-		}
-	});
-});
+	window.onload = getCurrentDomain;
 
 	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	$("#submitImport").click(function() {
+
+	$("#submitImport").click(function () {
+
 		myImport();
-	}); 
-	$('#importDialog').dialog({
-		autoOpen:false,
-		modal:true,
-		buttons: {
-        Ok: function() {
-          $( this ).dialog( "close" );
-        }
-      }
+
 	});
-	function myImport(){
-		/*
-		var x = document.getElementById("frm1").find('input[name=fname').val();
-		var displayTxt = "";
-		var i;
-		for (i = 0; i < x.length ;i++) {
-		displayTxt += x.elements[i].value + "/";
-		}
-		*/
-		//var x = $('#frm1').find('input[name="fname"]').val();
-		//var y = $('#frm1').find('input[name="lname"]').val();
-		var z = $('#jpaste').val();
-		//displayStatus("#importstatus",x,y,z);
-		//$("#importstatus").text(x+" "+y +" "+ z);
-		//here goes parsing function
-		var arr = JSON.parse(z);
-		var i;
-		var out = "<table>";
-		var impCookie = {};
-		for (i = 0; i < arr.length; i++) { 
-			impCookie.name = arr[i].name; 		
-			impCookie.domain = arr[i].domain;
-			impCookie.value = arr[i].value;
-			impCookie.expirationDate = arr[i].expirationDate; 		
-			impCookie.secure = arr[i].secure; 
-			impCookie.httpOnly = arr[i].httpOnly;
-			//impCookie.hostOnly = arr[1].hostOnly;
-			//impCookie.session = arr[1].session; these two dont work
-			impCookie.path = arr[i].path;
-			impCookie.storeId = arr[i].storeId;
-			//impCookie.url = arr[i].domain.replace(".","https://www.");
-			/*if (arr[i].domain.substr(0,1) === "."){
-				impCookie.url = "http://www" + arr[i].domain;
+
+	$('#importDialog').dialog({
+
+		autoOpen : false,
+
+		modal : true,
+
+		buttons : {
+
+			Ok : function () {
+
+				$(this).dialog("close");
+
 			}
+
+		}
+
+	});
+
+	function myImport() {
+
+		/*
+
+		var x = document.getElementById("frm1").find('input[name=fname').val();
+
+		var displayTxt = "";
+
+		var i;
+
+		for (i = 0; i < x.length ;i++) {
+
+		displayTxt += x.elements[i].value + "/";
+
+		}
+
+		 */
+
+		//var x = $('#frm1').find('input[name="fname"]').val();
+
+		//var y = $('#frm1').find('input[name="lname"]').val();
+
+		var z = $('#jpaste').val();
+
+		//displayStatus("#importstatus",x,y,z);
+
+		//$("#importstatus").text(x+" "+y +" "+ z);
+
+		//here goes parsing function
+
+		var arr = JSON.parse(z);
+
+		var i;
+
+		var out = "<table>";
+
+		var impCookie = {};
+
+		for (i = 0; i < arr.length; i++) {
+
+			impCookie.name = arr[i].name;
+
+			impCookie.domain = arr[i].domain;
+
+			impCookie.value = arr[i].value;
+
+			impCookie.expirationDate = arr[i].expirationDate;
+
+			impCookie.secure = arr[i].secure;
+
+			impCookie.httpOnly = arr[i].httpOnly;
+
+			//impCookie.hostOnly = arr[1].hostOnly;
+
+			//impCookie.session = arr[1].session; these two dont work
+
+			impCookie.path = arr[i].path;
+
+			impCookie.storeId = arr[i].storeId;
+
+			//impCookie.url = arr[i].domain.replace(".","https://www.");
+
+			/*if (arr[i].domain.substr(0,1) === "."){
+
+			impCookie.url = "http://www" + arr[i].domain;
+
+			}
+
 			else if (arr[i].domain.substr(0,1) !== "."){
-				impCookie.url = "http://www." + arr[i].domain;
+
+			impCookie.url = "http://www." + arr[i].domain;
+
 			}*/
+
 			impCookie.url = arr[i].url;
+
 			chrome.extension.getBackgroundPage().console.log(impCookie.hostOnly);
+
 			chrome.cookies.set(impCookie);
+
 			//table output
+
+			/*
+
 			out += "<tr><td>" +
+
 			arr[i].domain + "</td><td>" +
-			arr[i].expirationDate + "</td><td>" +			
+
+			arr[i].expirationDate + "</td><td>" +
+
 			arr[i].name + "</td><td>" +
+
 			arr[i].secure + "</td><td>" +
+
 			arr[i].httpOnly + "</td><td>" +
+
 			arr[i].session + "</td><td>" +
+
 			impCookie.url + "</td><td>" +
-			arr[i].path + "</td></tr>";
+
+			arr[i].path + "</td></tr>";*/
+
+		}
+
+		out += "</table>";
+
+		//$("#importstatus").html(out);
+
+		//alert("Cookies successfully imported.")
+
+		$('#importDialog').dialog("open");
 
 	}
-		out += "</table>";
-		$("#importstatus").html(out);
-		//alert("Cookies successfully imported.")
-		$('#importDialog').dialog("open");
-	}
+
 	// GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	$("#ExportClipboard").click(function () {
+
+		//http://stackoverflow.com/questions/18436245/how-to-fetch-url-of-current-tab-in-my-chrome-extention-using-javascript
+
+		exportClip();
+
+	});
+
+	$('#exportDialog').dialog({
+
+		autoOpen : false,
+
+		modal : true,
+
+		buttons : {
+
+			Ok : function () {
+
+				$(this).dialog("close");
+
+			}
+
+		}
+
+	});
+
+	function exportClip() {
+
+		chrome.tabs.query({
+			currentWindow : true,
+			active : true
+		}, function (tabs) {
+
+			var exportFilter = tabs[0].url;
+
+			var filter = {};
+
+			filter.url = exportFilter;
+
+			chrome.cookies.getAll(filter, function (cookieArray) {
+
+				var text = '';
+
+				text += '[' + '\n';
+
+				for (var i = 0; i < cookieArray.length; i++) {
+
+					var cookieUrl = 'http' + ((cookieArray[i].secure) ? 's' : '') + '://' + cookieArray[i].domain;
+
+					text += '{' + '\n';
+
+					text += '    "url": "' + filter.url + '", \n';
+
+					text += '    "domain": "' + cookieArray[i].domain + '", \n';
+
+					if (typeof cookieArray[i].expirationDate !== "undefined") {
+
+						text += '    "expirationDate": ' + cookieArray[i].expirationDate + ', \n';
+
+					}
+
+					text += '    "hostOnly": ' + cookieArray[i].hostOnly + ', \n';
+
+					text += '    "httpOnly": ' + cookieArray[i].httpOnly + ', \n';
+
+					text += '    "name": "' + cookieArray[i].name + '", \n';
+
+					text += '    "path": "' + cookieArray[i].path + '", \n';
+
+					text += '    "sameSite": "' + cookieArray[i].sameSite + '", \n';
+
+					text += '    "secure": ' + cookieArray[i].secure + ', \n';
+
+					text += '    "session": ' + cookieArray[i].session + ', \n';
+
+					text += '    "storeId": "' + cookieArray[i].storeId + '", \n';
+
+					text += '    "value": "' + cookieArray[i].value + '", \n';
+
+					text += '    "id": ' + (i + 1) + ' \n';
+
+					text += '}';
+
+					if (i + 1 < cookieArray.length) {
+
+						text += ',';
+
+					}
+
+					text += '\n';
+
+				}
+
+				text += ']';
+
+				copyTextToClipboard(text);
+
+				//alert("Cookies from "+filter.url+" has been exported to clipboard");
+
+				$("#exportDialog").html("Cookies from " + cookieArray[0].domain + " successfully exported");
+
+				$('#exportDialog').dialog("open");
+
+			});
+
+		});
+
+	}
+
+	function copyTextToClipboard(text) {
+
+		var textArea = document.createElement("textarea");
+
+		textArea.value = text;
+
+		document.body.appendChild(textArea);
+
+		textArea.select();
+
+		try {
+
+			var successful = document.execCommand('copy');
+
+		} catch (err) {}
+
+		document.body.removeChild(textArea);
+
+	}
 
 });

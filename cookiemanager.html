@@ -1,153 +1,151 @@
 <!doctype html>
 <!--http: //api.jqueryui.com/1.8/tabs/ -->
 <html lang="en">
-<head>
-<!-- 
-  // jquery ui is 1.11.4 version
-  // jquery is 1.12.3 version
-  //Icon:
-  <div>Icons made by <a href="http://www.freepik.com" title="Freepik">
-  Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.
-  flaticon.com</a> is licensed by <a href="http://creativecommons.org
-  /licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
-  //jqplugins datetimepicker http: //xdsoft.net/jqplugins/datetimepicker/
-  //http://www.jqueryscript.net/form/jQuery-Plugin-For-Multi-Selectable-Tree-Structure-Tree-Multiselect.html
-  -->
-  <meta charset="utf-8">
-  <title>Cookie Obliterator</title>
-  <script src="jquery-1.12.3.min.js"></script>
-  <script src="jquery-ui.js"></script>
-  <script src="jquery.datetimepicker.full.min.js"></script>  
-  <script src="jquery.tree-multiselect.min.js"></script>  
-  <script type="text/javascript" src="cookiemanager.js"></script>  
-  <link rel="stylesheet" href="jquery-ui.min.css">
-  <link rel="stylesheet" type="text/css" href="jquery.datetimepicker.min.css"/ >
-  <link rel="stylesheet" type="text/css" href="jquery.tree-multiselect.min.css"/ >
-  <link rel="stylesheet" type="text/css" href="cookiemanager.css" />
-</head>
-<body>
-<div id="tabs">
-  <ul>
-    <li><a href="#removeCookie"><span>Remove</span></a></li>
-    <li><a href="#addCookie"><span>Add</span></a></li>
-	<li><a href="#modifyCookie"><span>Modify</span></a></li>
-    <li><a href="#importCookie"><span>Import</span></a></li>
-    <li><a href="#exportCookie"><span>Export</span></a></li>
-  </ul>
-  <div id="removeCookie">
-		<h2>Remove Cookie</h2>
-		  <h3>Auto Session Remove</h3>
-		  <div id="autoRemove">
-			<button id="autoRemoveButton" value="OFF">OFF</button>
-		  </div>
-		  <div id="autoRemoveConfirm" title="Are You Sure?">
-		  	<p>All Cookies Will Be Set As Session Cookies.<br>This move is irreversible.</p>
-		  </div>
-		  <br><hr>
-		  
-		  <h3>Manual Remove</h3>
-		  <p><small>? shows URL</small></p>
-		  <div id="removeCookieManual">
-		  	<input type="submit" id="manualRemoveShowCookies" value="Select Cookies"/>
-			<div id ="chooseRemoveCookiesBox" class="treecheckbox"></div>
-		  </div>
-		  <div>
-		  	</br>
-		    <input type="submit" id="submitRemove" value="Submit" disabled/>
-		    </t>
-			<input type="submit" id="submitRemoveAll" value="Remove All" disabled/>
-		  </div>
-		  <div><p id="rStatus"></p></div>
-	
-  </div>
-  <div id="addCookie">
-	  <h2>Add Cookie</h2>
-	  <p><small>** compulsory</small></p>
-	  <div>
-		<p>Domain**: <input type="text" class="compulsary" name="domain" ></p>
-		<p>Name**: <input type="text" class="compulsary" name="name"></p>
-		<p>Value: </br><textarea name="value" cols=39 rows=5></textarea></p>
-		<p>Path: <input type="text" name="path" value="/"\></p>
-		<p>Store ID: <input type="text" name="storeId"></p>
-		<p>Lifetime:
-			<fieldset id="addDateContainer">
-				<p id="addDateDate"><input type="radio" name="lifetime" id="arDate">Date mm/dd/yyyy : <input type="text" class="datetimepicker" id="ardateValue" disabled /></p>
-				<p id="addDateDay"><input type="radio" name="lifetime"id="arDay">Days : <input type="text" size="5" id="ardayValue" disabled /></p>
-				<p id="addDateSession"><input type="radio" name="lifetime"id="arSession" checked>Session</p>
-			</fieldset>
-		</p>
-		<p>Secure: <input type="checkbox" name="secure"></p>
-		<p>HttpOnly: <input type="checkbox" name="httpOnly"></p>
-		<!-- 
-		<p>Same Site:
-			<select name="sameSite">
-				<option value="no_restriction">No Restriction<small> (default) </small></option>
-				<option value="Lax">Lax</option>
-				<option value="Strict">Strict</option>
-			</select>
-		</p>
-		-->
-		<input type="submit" id="submitAdd" value="Submit"/>
-	  </div>
-	  <div> <p id="aStatus"></p> </div>
-  </div>
-  
-<div id="modifyCookie">
-                <h2>Modify Cookie</h2>
-                <!-- add modify cookie html here-->
-                <div>
-                    <p>Domain: <input type="text" class="compulsary" name="domain" ></p>
-                    <p>Name of cookie to edit: <input type="text" class="compulsary" name="name"></p>
-                    <p>New value: </br><textarea name="value" cols=39 rows=5></textarea></p>
-                    <!--<p>Path: <input type="text" name="path" value="/"\></p>-->
-                    <!--<p>Store ID: <input type="text" name="storeId"></p>-->
-                    <p>Lifetime:
-                    <fieldset id="modDateContainer">
-                        <p id="modDateDate"><input type="radio" name="lifetime" id="modDate">Date mm/dd/yyyy : <input type="text" class="datetimepicker" id="moddateValue" disabled /></p>
-                        <p id="modDateDay"><input type="radio" name="lifetime"id="modDay">Days : <input type="text" size="5" id="moddayValue" disabled /></p>
-                        <p id="modDateSession"><input type="radio" name="lifetime"id="modSession" checked>Session</p>
-                    </fieldset>
-                    </p>
-                    <p>Secure: <input type="checkbox" name="secure"></p>
-                    <p>HttpOnly: <input type="checkbox" name="httpOnly"></p>
-
-                    </br><input type="submit" id="submitModify" value="Submit"/>
-                </div>
-                <div> <p id="mStatus"></p> </div>
+   <head>
+      <!-- 
+         // jquery ui is 1.11.4 version
+         // jquery is 1.12.3 version
+         //Icon:
+         <div>Icons made by <a href="http://www.freepik.com" title="Freepik">
+         Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.
+         flaticon.com</a> is licensed by <a href="http://creativecommons.org
+         //Refresh img icon:
+         https://www.iconfinder.com/icons/48111/refresh_reload_rotate_update_icon#size=48
+         /licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+         //jqplugins datetimepicker http: //xdsoft.net/jqplugins/datetimepicker/
+         //http://www.jqueryscript.net/form/jQuery-Plugin-For-Multi-Selectable-Tree-Structure-Tree-Multiselect.html
+         -->
+      <meta charset="utf-8">
+      <title>Cookie Obliterator</title>
+      <script src="jquery-1.12.3.min.js"></script>
+      <script src="jquery-ui.js"></script>
+      <script src="jquery.datetimepicker.full.min.js"></script>  
+      <script src="jquery.tree-multiselect.min.js"></script>  
+      <script type="text/javascript" src="cookiemanager.js"></script>  
+      <link rel="stylesheet" href="jquery-ui.min.css">
+      <link rel="stylesheet" type="text/css" href="jquery.datetimepicker.min.css"/ >
+      <link rel="stylesheet" type="text/css" href="jquery.tree-multiselect.min.css"/ >
+      <link rel="stylesheet" type="text/css" href="cookiemanager.css" />
+   </head>
+   <body>
+      <div id="tabs">
+         <ul>
+            <li><a href="#removeCookie"><span>Remove</span></a></li>
+            <li><a href="#addCookie"><span>Add</span></a></li>
+            <li><a href="#modifyCookie"><span>Modify</span></a></li>
+            <li><a href="#importCookie"><span>Import</span></a></li>
+            <li><a href="#exportCookie"><span>Export</span></a></li>
+         </ul>
+         <div id="removeCookie">
+            <h2>Remove Cookie</h2>
+            <h3>Auto Session Remove</h3>
+            <div id="autoRemove">
+               <button id="autoRemoveButton">OFF</button>
             </div>
-  
-  
-<div id="importCookie">
-	<h2>Import Cookie</h2>
-	
-	<!--<form id="frm1" action="form_action.asp">
-		First name: <input type="text" name="fname" value="Donald"><br>
-		Last name: <input type="text" name="lname" value="Duck"><br><br>
-		<input type="submit" value="Submit">
-	</form>
-        -->
-        <p>Click import to tabulate the JSON cookie.</p>
-        <textarea rows="15" cols="50" id="jpaste" form="frm1">Paste cookie here...</textarea>
-
-	<input type="submit" id="submitImport" value="Import!"/>
-
-	<div> <p id="importstatus"></p> </div>
-	
-	<!--This is just a small text input/submit form. Backend code is still being integrated.-->
-	<div id="importDialog" title="Success">
-  	<p>Cookies successfully imported.</p>
-	</div>
-</div>
-  
-  
-  <div id="exportCookie">
-	  <h2>Export Cookie</h2>
-	  <!-- add export cookie html here-->
-
-  </div>
-  
-  
-</div>
- 
-</body>
+            <div id="autoRemoveConfirm" title="Are You Sure?">
+               <p>All Cookies Will Be Set As Session Cookies.<br>This move is irreversible.</p>
+            </div>
+            <br>
+            <hr>
+            <h3>Manual Remove</h3>
+            <p><small>? shows URL</small></p>
+            <div id="removeCookieManual">
+               <input type="submit" id="manualRemoveShowCookies" value="Select Cookies"/>
+               <input type="submit" id="submitRemoveAll" value="Remove All"/>
+               <div id ="chooseRemoveCookiesBox" class="treecheckbox"></div>
+               </br>
+               <input type="submit" id="submitRemove" value="Submit"/>
+            </div>
+            <div>
+               <p id="rStatus"></p>
+            </div>
+         </div>
+         <div id="addCookie">
+            <h2>Add Cookie</h2>
+            <p><small>** compulsory</small></p>
+            <div>
+               <p>Domain**: <input type="text" class="compulsory" name="domain" class="ui-widget"></p>
+               <p>Name**: <input type="text" class="compulsory" name="name"></p>
+               <p>Value: </br><textarea name="value" cols=52 rows=6 class='textareaClass'></textarea></p>
+               <p>Path: <input type="text" name="path" value="/" disabled /></p>
+               <p>Lifetime:
+               <fieldset>
+                  <p><input type="radio" name="lifetime">Date : <input type="text" class="datetimepicker" disabled /></p>
+                  <p><input type="radio" name="lifetime">Days : <input type="text" class="onlyNumbers" size="5" disabled /></p>
+                  <p><input type="radio" name="lifetime" checked>Session</p>
+               </fieldset>
+               </p>
+               <p>Secure: <input type="checkbox" name="secure"></p>
+               <p>HttpOnly: <input type="checkbox" name="httpOnly"></p>
+               <input type="submit" id="submitAdd" value="Submit"/>
+            </div>
+            <div>
+               <p id="aStatus"></p>
+            </div>
+         </div>
+         <div id="modifyCookie">
+            <h2>Modify Cookie</h2>
+            <h3>Select a cookie to edit:</h3>
+            <!--ACCORDION PANELS	-->	
+            <div id="outerPanel">
+               <!--grandparent-->
+               <div class="panel">
+                  <p id="myCounter" hidden></p>
+                  <p id="myDomain">Domain: <input type="text" class="compulsory" name="domain" disabled></p>
+                  <p id="myPath">Path: <input type="text" name="path"  disabled></p>
+                  <p id="myName">Name: <input type="text" class="compulsory" name="name" disabled></p>
+                  <p id="myValue">Value: </br><textarea name="value" cols=39 rows=5></textarea></p>
+                  <div id="myExpiration">
+                     <p>Expiration:
+                     <fieldset id="modDateContainer">
+                        <p name="modDateDate"><input type="radio" name="lifetime2">Date: <input type="text" class="datetimepicker" disabled/></p>
+                        <p name="modDateDay"><input type="radio" name="lifetime2">Days: <input type="text" class="onlyNumbers" size="5" disabled/></p>
+                        <p name="modDateSession"><input type="radio" name="lifetime2" checked>Session</p>
+                     </fieldset>
+                     </p>
+                  </div>
+                  <p>Secure: <input type="checkbox" name="secure"></p>
+                  <p>HttpOnly: <input type="checkbox" name="httpOnly"></p>
+                  <!--parent-->
+                  <center>
+                     <!--start here, this-->
+                     <input class="modClass" type="submit" id="submitModify" value="Modify"/>
+                  </center>
+                  <br>
+               </div>
+            </div>
+         </div>
+         <div id="importCookie">
+            <h2>Import Cookie</h2>
+            <!--<form id="frm1" action="form_action.asp">
+               First name: <input type="text" name="fname" value="Donald"><br>
+               
+               Last name: <input type="text" name="lname" value="Duck"><br><br>
+               
+               <input type="submit" value="Submit">
+               
+               </form>
+               
+                     -->
+            <p>Click import to tabulate the JSON cookie.</p>
+            <textarea rows="15" cols="50" id="jpaste" form="frm1">Paste cookie here...</textarea>
+            <input type="submit" id="submitImport" value="Import!"/>
+            <div>
+               <p id="importstatus"></p>
+            </div>
+            <!--This is just a small text input/submit form. Backend code is still being integrated.-->
+            <div id="importDialog" title="Success">
+               <p>Cookies successfully imported.</p>
+            </div>
+         </div>
+         <div id="exportCookie">
+            <h2>Export Cookie</h2>
+            <!-- add export cookie html here-->
+            <input type="submit" id="ExportClipboard" value="Copy to clipboard"/>
+            <div id="exportDialog" title="Success">
+               <p>Cookies successfully exported.</p>
+            </div>
+         </div>
+      </div>
+   </body>
 </html>

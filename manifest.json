@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "Cookies Obliterator",
-  "description": "The best extension for oliterating cookies!",
+  "name": "Cookie Boss",
+  "description": "Manage your cookies like a boss.",
   "version": "1.0",
   "icons": { "16": "icon.png", "48": "icon.png", "128": "icon.png" },
   "browser_action": {
