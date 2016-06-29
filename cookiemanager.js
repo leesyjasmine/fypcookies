@@ -402,7 +402,6 @@ $(function () {
 	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	$("#submitImport").click(function () {
 		myFunction();
-
 	});
 	function myFunction() {
 		/*
@@ -438,5 +437,63 @@ $(function () {
 
 	}
 	// GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	$("#ExportClipboard").click(function () {
+		//http://stackoverflow.com/questions/18436245/how-to-fetch-url-of-current-tab-in-my-chrome-extention-using-javascript
+		exportClip();	
+	
+	});
+
+	function exportClip () {
+		chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+			var exportFilter = tabs[0].url;			
+			var filter ={};
+			filter.url = exportFilter;
+			chrome.cookies.getAll(filter, function (cookieArray) {
+				var text='';
+				text +='['+ '\n';
+				for(var i = 0; i < cookieArray.length; i++){
+					var cookieUrl = 'http' + ((cookieArray[i].secure) ? 's' : '') + '://' + cookieArray[i].domain;
+					text +='{' + '\n';
+					text +='    "url": "'+ filter.url +'", \n';
+					text +='    "domain": "'+cookieArray[i].domain +'", \n';
+					if(typeof cookieArray[i].expirationDate !== "undefined" ){
+					text +='    "expirationDate": '+cookieArray[i].expirationDate +', \n';
+					}
+					text +='    "hostOnly": '+cookieArray[i].hostOnly +', \n';
+					text +='    "httpOnly": '+cookieArray[i].httpOnly +', \n';
+					text +='    "name": "'+cookieArray[i].name +'", \n';
+					text +='    "path": "'+cookieArray[i].path +'", \n';
+					text +='    "sameSite": "'+cookieArray[i].sameSite +'", \n';
+					text +='    "secure": '+cookieArray[i].secure +', \n';
+					text +='    "session": '+cookieArray[i].session +', \n';
+					text +='    "storeId": "'+cookieArray[i].storeId +'", \n';
+					text +='    "value": "'+cookieArray[i].value +'", \n';
+					text +='    "id": '+(i+1) +' \n';
+					text +='}';
+					if (i+1<cookieArray.length){
+							text += ',';
+						}
+					text += '\n'; 
+				}
+				text +=']';
+				copyTextToClipboard(text);
+				alert("Cookies from "+filter.url+" has been exported to clipboard");
+			});
+		});
+	}
+	
+	function copyTextToClipboard(text) {
+		var textArea = document.createElement("textarea");
+		textArea.value = text;
+
+		document.body.appendChild(textArea);
+		textArea.select();
+
+		try {
+			var successful = document.execCommand('copy');
+		} catch (err) {}
+
+		document.body.removeChild(textArea);
+	}
 
 });
