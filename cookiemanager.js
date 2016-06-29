@@ -120,7 +120,7 @@ $(function () {
 		chrome.cookies.getAll({}, function (cookieArray) {
 			for (var i = 0; i < cookieArray.length; i++) {
 				var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
-					chrome.cookies.remove(remCookie);
+				chrome.cookies.remove(remCookie);
 			}
 		});
 		resetManualRemove("Success Remove");
@@ -163,41 +163,41 @@ $(function () {
 			sameSite=$('#addCookie').find('select[name=sameSite] option:selected').val();
 			if (sameSite!=='no_restriction')
 			newCookie.sameSite = sameSite;
-			 */
-			newCookie.url = 'http' + ((newCookie.secure) ? 's' : '') + '://' + newCookie.domain + newCookie.path;
+		*/
+		newCookie.url = 'http' + ((newCookie.secure) ? 's' : '') + '://' + newCookie.domain + newCookie.path;
 
-			chrome.cookies.set(newCookie);
+		chrome.cookies.set(newCookie);
 
-			displayStatus('#aStatus', "Success Add", newCookie.name);
-			reset("#addCookie");
-			resetDateContainer('#addDateContainer');
-			$("#addCookie").find('input[name=path]').val('/');
+		displayStatus('#aStatus', "Success Add", newCookie.name);
+		reset("#addCookie");
+		resetDateContainer('#addDateContainer');
+		$("#addCookie").find('input[name=path]').val('/');
+	}
+});
+$("input[name=lifetime]:radio").click(function () {
+	checkedElementID = $('input[name=lifetime]:checked').attr('id');
+	$('#addDateContainer p').each(function () {
+		var pid = '#' + $(this).attr('id');
+		var checkID = $(pid + ' input[name=lifetime]').attr('id');
+		var inputID = $(pid + ' input[type=text]').attr('id');
+
+		var hasInputID = false;
+		if (typeof inputID !== typeof undefined && inputID !== false) {
+			hasInputID = true;
+		}
+		inputID = '#' + inputID;
+		if (checkID === checkedElementID) {
+			if (hasInputID) {
+				$(inputID).attr('disabled', false);
+			}
+		} else {
+			if (hasInputID) {
+				$(inputID).attr('disabled', true);
+				$(inputID).val('');
+			}
 		}
 	});
-	$("input[name=lifetime]:radio").click(function () {
-		checkedElementID = $('input[name=lifetime]:checked').attr('id');
-		$('#addDateContainer p').each(function () {
-			var pid = '#' + $(this).attr('id');
-			var checkID = $(pid + ' input[name=lifetime]').attr('id');
-			var inputID = $(pid + ' input[type=text]').attr('id');
-
-			var hasInputID = false;
-			if (typeof inputID !== typeof undefined && inputID !== false) {
-				hasInputID = true;
-			}
-			inputID = '#' + inputID;
-			if (checkID === checkedElementID) {
-				if (hasInputID) {
-					$(inputID).attr('disabled', false);
-				}
-			} else {
-				if (hasInputID) {
-					$(inputID).attr('disabled', true);
-					$(inputID).val('');
-				}
-			}
-		});
-	});
+});
 
 	//UTILITIES*************************************************************
 	function isundefinednull(value) {
@@ -240,7 +240,7 @@ $(function () {
 			/*
 			http:// stackoverflow.com/questions/891696/jquery-what-is-the-best
 			-way-to-restrict-number-only-input-for-textboxes-all
-			 */
+			*/
 			if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
 				this.value = this.value.replace(/[^0-9\.]/g, '');
 			}
@@ -335,7 +335,7 @@ $(function () {
 				"name": modCookie.name
 				});
 				alert(modCookie.value);
-				 */
+				*/
 
 				var lifetimeId = $('#modifyCookie').find('input[name=lifetime]:checked').attr('id');
 
@@ -372,39 +372,47 @@ $(function () {
 				$("#modifyCookie").find('input[name=path]').val('/');
 			}
 		});
-	});
+});
 
-	$("input[name=lifetime]:radio").click(function () {
-		checkedElementID = $('input[name=lifetime]:checked').attr('id');
-		$('#modDateContainer p').each(function () {
-			var pid = '#' + $(this).attr('id');
-			var checkID = $(pid + ' input[name=lifetime]').attr('id');
-			var inputID = $(pid + ' input[type=text]').attr('id');
+$("input[name=lifetime]:radio").click(function () {
+	checkedElementID = $('input[name=lifetime]:checked').attr('id');
+	$('#modDateContainer p').each(function () {
+		var pid = '#' + $(this).attr('id');
+		var checkID = $(pid + ' input[name=lifetime]').attr('id');
+		var inputID = $(pid + ' input[type=text]').attr('id');
 
-			var hasInputID = false;
-			if (typeof inputID !== typeof undefined && inputID !== false) {
-				hasInputID = true;
+		var hasInputID = false;
+		if (typeof inputID !== typeof undefined && inputID !== false) {
+			hasInputID = true;
+		}
+		inputID = '#' + inputID;
+		if (checkID === checkedElementID) {
+			if (hasInputID) {
+				$(inputID).attr('disabled', false);
 			}
-			inputID = '#' + inputID;
-			if (checkID === checkedElementID) {
-				if (hasInputID) {
-					$(inputID).attr('disabled', false);
-				}
-			} else {
-				if (hasInputID) {
-					$(inputID).attr('disabled', true);
-					$(inputID).val('');
-				}
+		} else {
+			if (hasInputID) {
+				$(inputID).attr('disabled', true);
+				$(inputID).val('');
 			}
-		});
+		}
 	});
+});
 
 	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	$("#submitImport").click(function () {
-		myFunction();
-
+	$("#submitImport").click(function() {
+		myImport();
+	}); 
+	$('#importDialog').dialog({
+		autoOpen:false,
+		modal:true,
+		buttons: {
+        Ok: function() {
+          $( this ).dialog( "close" );
+        }
+      }
 	});
-	function myFunction() {
+	function myImport(){
 		/*
 		var x = document.getElementById("frm1").find('input[name=fname').val();
 		var displayTxt = "";
@@ -412,7 +420,7 @@ $(function () {
 		for (i = 0; i < x.length ;i++) {
 		displayTxt += x.elements[i].value + "/";
 		}
-		 */
+		*/
 		//var x = $('#frm1').find('input[name="fname"]').val();
 		//var y = $('#frm1').find('input[name="lname"]').val();
 		var z = $('#jpaste').val();
@@ -422,20 +430,44 @@ $(function () {
 		var arr = JSON.parse(z);
 		var i;
 		var out = "<table>";
-		for (i = 0; i < arr.length; i++) {
+		var impCookie = {};
+		for (i = 0; i < arr.length; i++) { 
+			impCookie.name = arr[i].name; 		
+			impCookie.domain = arr[i].domain;
+			impCookie.value = arr[i].value;
+			impCookie.expirationDate = arr[i].expirationDate; 		
+			impCookie.secure = arr[i].secure; 
+			impCookie.httpOnly = arr[i].httpOnly;
+			//impCookie.hostOnly = arr[1].hostOnly;
+			//impCookie.session = arr[1].session; these two dont work
+			impCookie.path = arr[i].path;
+			impCookie.storeId = arr[i].storeId;
+			//impCookie.url = arr[i].domain.replace(".","https://www.");
+			/*if (arr[i].domain.substr(0,1) === "."){
+				impCookie.url = "http://www" + arr[i].domain;
+			}
+			else if (arr[i].domain.substr(0,1) !== "."){
+				impCookie.url = "http://www." + arr[i].domain;
+			}*/
+			impCookie.url = arr[i].url;
+			chrome.extension.getBackgroundPage().console.log(impCookie.hostOnly);
+			chrome.cookies.set(impCookie);
+			//table output
 			out += "<tr><td>" +
 			arr[i].domain + "</td><td>" +
-			arr[i].expirationDate + "</td><td>" +
-			arr[i].hostOnly + "</td><td>" +
-			arr[i].httpOnly + "</td><td>" +
+			arr[i].expirationDate + "</td><td>" +			
 			arr[i].name + "</td><td>" +
-			arr[i].path + "</td><td>" +
-			arr[i].storeId + "</td><td>" +
-			arr[i].id + "</td></tr>";
-		}
+			arr[i].secure + "</td><td>" +
+			arr[i].httpOnly + "</td><td>" +
+			arr[i].session + "</td><td>" +
+			impCookie.url + "</td><td>" +
+			arr[i].path + "</td></tr>";
+
+	}
 		out += "</table>";
 		$("#importstatus").html(out);
-
+		//alert("Cookies successfully imported.")
+		$('#importDialog').dialog("open");
 	}
 	// GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
