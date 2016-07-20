@@ -7,7 +7,7 @@
 	outline: none;	
 }
 #tabs{
-	min-width:430px;
+	min-width:450px;
 	background-color:white;	
 }
  
@@ -33,6 +33,19 @@
 	padding:3px;
 }
 /* Auto Remove Toggle Button ---------------------------*/
+.autoRemoveHelp{
+    width: 5em;
+}
+.removeCookieAuto {
+	display: inline-block;
+	margin-left:9px;
+	padding:2px;
+	overflow:auto;
+}
+.removeCookieAuto a{
+	color:#1C94C4;
+	font-size: 12px;
+}
 .autoRemoveOff{
 	border: 2px solid #C0C0C0;
 	border-radius: 20px;
@@ -74,7 +87,16 @@
     height: 100px;
   }
 /*-----------------------------------------------------*/
-
+#notifications {
+    cursor: pointer;
+    position: fixed;
+    right: 0px;
+    z-index: 9999;
+    bottom: 0px;
+    margin-bottom: 22px;
+    margin-right: 15px;
+    max-width: 300px;   
+}
 
 /* MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /* Style the buttons that are used to open and close the accordion panel */

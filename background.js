@@ -21,6 +21,92 @@ function resetBadge(){
 		text: ''
 	});
 }
+//background listener for auto tab------------
+var onTab = false;
+function clearByDomain(domain){
+	var urlPattern = '*://*' + domain + '/*'; // pattern
+	chrome.tabs.query({'url':urlPattern},function(tabArray){
+		if(tabArray.length <= 0){ // no other alive domains
+			//clear cookies for that domain
+			chrome.cookies.getAll({'domain':domain},function(cookieArray){
+				if (cookieArray.length > 0){
+					showANotification(domain);
+					for (var i = 0; i < cookieArray.length; i++){
+						var remCookie = copyAsRemoveCookie(cookieArray[i]);
+						chrome.cookies.remove(remCookie);	
+						removed = true;
+					}
+				}
+			});
+		}
+	});
+}
+function getDomain(urlStr){
+	var url = new URL(urlStr);
+	var domain ='.'+url.hostname.replace('www.','');
+	return domain;
+}
+function setTab(tabId,removeInfo){
+	// 1. listener that detects closed tab
+	// 2. checks if all tabs of domain across all windows have been closed
+	// 3. if all closed, removes cookies for that domain
+	if (onTab){
+	  if(!removeInfo.isWindowClosing){
+		chrome.sessions.getRecentlyClosed(function(lastClosed){				
+			clearByDomain(getDomain(lastClosed[0].tab.url));
+		});
+	  }
+	}else{
+	  chrome.tabs.onRemoved.removeListener(setTab);
+	}
+}
+function showANotification(domain){
+	chrome.notifications.create(null,{
+		type:"basic",
+		title:"Cookies Removed for",
+		message:domain,
+		iconUrl:"icon.png",
+	},function(notificationId){
+		setTimeout(function(){chrome.notifications.clear(notificationId);},1000);
+	});
+}
+function setWindow(windowId){ // to decide and remove cookies after window closes
+	//obtain tabs of last closed window
+	//compare and remove cookies accordingly
+	if(onTab){
+		chrome.sessions.getRecentlyClosed(function(lastClosed){
+			if (isundefinednull(typeof lastClosed[0].window)){
+				//last closed window has only 1 tab on window
+				clearByDomain(getDomain(lastClosed[0].tab.url));
+			}else{
+				//obtain unique domain list of tabs in last closed window
+				var domainList = [];
+				for (var i = 0; i < lastClosed[0].window.tabs.length ;i++){
+					var aDomain = getDomain(lastClosed[0].window.tabs[i].url);
+					if (domainList.indexOf(aDomain)=== -1)
+						domainList.push(aDomain); 
+				}
+				//filter each domain and remove cookies of that domain if needed 
+				for (var i = 0; i < domainList.length; i++){
+					clearByDomain(domainList[i]);
+				}
+			}
+		});	
+	}else{
+		chrome.windows.onRemoved.removeListener(setWindow);
+	}
+}
+
+function addTabListener(){
+	onTab = true;
+	chrome.tabs.onRemoved.addListener(setTab);
+	chrome.windows.onRemoved.addListener(setWindow);
+}
+function removeTabListener(){
+	onTab = false;
+	setTab('','');
+	setWindow('');
+}
 /*background listener for auto session------------
 /*TESTING
 	if (chrome.cookies.onChanged.hasListeners()){

@@ -8,32 +8,76 @@ $(function () {
 
 	//INITIALISATION*******************************************************
 	$("#tabs").tabs();
-	$("#autoRemove").addClass('autoRemoveOff'); // remove //default
 	restoreSessionOptions();
+	restoreTabOptions();
 	//SAVE A SESSION OPTIONS************************************************
 	function saveSessionOptions(option) {
-		chrome.storage.sync.clear();
-		chrome.storage.sync.set({
+ 		chrome.storage.sync.set({
 			'inSession' : option
 		});
 	}
 	function restoreSessionOptions() { // only use in initialisation
 		chrome.storage.sync.get('inSession', function (results) {
 			if (!chrome.extension.getBackgroundPage().isundefinednull(results.inSession)) {
-				if (results.inSession) {
-					setAddSession();
+				if (results.inSession){
+					setOnSession();
 				}
 			}
 		});
 	}
+	function saveTabOptions(option){
+		chrome.storage.sync.set({
+			'inTab' : option
+		});
+	}
+	function restoreTabOptions() { // only use in initialisation
+		chrome.storage.sync.get('inTab', function (results) {
+			if (!chrome.extension.getBackgroundPage().isundefinednull(results.inTab)) {
+				if (results.inTab) {
+					setOnTab();
+				}
+			}
+		});
+	}
+	//LAST REMOVE OPTIONS************************************************
+	chrome.storage.local.get('lastRemove', function (results) {
+		if (chrome.extension.getBackgroundPage().isundefinednull(results.lastRemove)) {
+			$('#undoLastRemove').attr('disabled',true);
+		}
+	});
 	//REMOVE====================================================
-	//AUTO REMOVE----------------------------------
+	$('.autoRemoveHelp').tooltip();
+	//AUTO REMOVE TOGGLE BUTTONS----------------------
+	function setAutoButton(ele,buttonText) {
+		$(ele).find('button').text(buttonText);
+		$(ele).toggleClass('autoRemoveOn');
+	}
+	//AUTO REMOVE TAB----------------------------------
+	$('#autoTabRemoveButton').click(function () {
+		//https: //bufferwall.com/petersirka/2015-03-12-tutorial-simple-html-toggle-button/
+		resetManualRemove('');
+		var status = $('#autoTabRemoveButton').text();
+		if (status === 'ON') {
+			setAutoButton('#autoTabRemove','OFF');
+			chrome.extension.getBackgroundPage().removeTabListener();
+			saveTabOptions(false);
+		} else if (status === 'OFF') {
+			setOnTab();
+		}
+	});
+	function setOnTab(){
+		setAutoButton('#autoTabRemove','ON');
+		chrome.extension.getBackgroundPage().addTabListener();
+		saveTabOptions(true);
+	}
+	//AUTO REMOVE SESSION----------------------------------
 	$('#autoRemoveButton').click(function () {
 		//https: //bufferwall.com/petersirka/2015-03-12-tutorial-simple-html-toggle-button/
 		resetManualRemove('');
 		var status = $('#autoRemoveButton').text();
 		if (status === 'ON') {
-			setRemoveSession();
+			setAutoButton('#autoRemove','OFF');
+			chrome.extension.getBackgroundPage().removeSessionListener();
 			saveSessionOptions(false);
 		} else if (status === 'OFF') {
 			$('#autoRemoveConfirm').dialog('open');
@@ -47,24 +91,18 @@ $(function () {
 		buttons : {
 			'YES' : function () {
 				$(this).dialog("close");
-				saveSessionOptions(true);
-				setAddSession();
+				setOnSession();
 			},
 			'NO' : function () {
 				$(this).dialog("close");
 			}
 		}
 	});
-	function setAddSession() {
-		$('#autoRemoveButton').text('ON');
-		$("#autoRemove").toggleClass('autoRemoveOn');
+	function setOnSession(){
+		saveSessionOptions(true);
+		setAutoButton('#autoRemove','ON');
 		setAllCookiesToSession();
 		chrome.extension.getBackgroundPage().addSessionListener();
-	}
-	function setRemoveSession() {
-		$('#autoRemoveButton').text('OFF');
-		$("#autoRemove").toggleClass('autoRemoveOn');
-		chrome.extension.getBackgroundPage().removeSessionListener();
 	}
 	function setAllCookiesToSession() {
 		chrome.cookies.getAll({}, function (cookieArray) {
@@ -81,6 +119,7 @@ $(function () {
 	$('#manualRemoveShowCookies').click(function () {
 		$('#submitRemove').show();
 		chrome.cookies.getAll({}, function (cookieArray) {
+			cookieArray = sortByDomain(cookieArray);
 			var appendStrArray = [];
 			for (var i = 0; i < cookieArray.length; i++) {
 				var cookieName = cookieArray[i].name;
@@ -106,16 +145,19 @@ $(function () {
 			$('#' + chooseCookiesBox).show(500);
 		}
 	}
+	
 	//When user submit cookies for removal: either by selection/remove all
 	$('#submitRemove').click(function () {
-		if ($('#chooseRemoveCookies option:selected').length > 0) {
+		var selectedLength = $('#chooseRemoveCookies option:selected').length;
+		if (selectedLength > 0) {
 			$('#chooseRemoveCookies option:selected').each(function () {
-				var remCookie = {};
-				remCookie.url = $(this).attr('data-description');
-				remCookie.name = $(this).val();
-				chrome.cookies.remove(remCookie);
+				var selectedCookie = {};
+				selectedCookie.url = $(this).attr('data-description');
+				selectedCookie.name = $(this).val();
+				chrome.cookies.get(selectedCookie,function(aCookie){
+					addLastRemoveArray(aCookie,selectedLength);
+				});
 			});
-			resetManualRemove("Success Remove");
 		}
 	});
 	$('#submitRemoveAll').click(function () {
@@ -123,11 +165,7 @@ $(function () {
 			if (cookieArray.length <= 0) {
 				resetManualRemove("No Cookies Found");
 			} else {
-				for (var i = 0; i < cookieArray.length; i++) {
-					var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
-						chrome.cookies.remove(remCookie);
-				}
-				resetManualRemove("Success Remove");
+				saveLastRemove(cookieArray);
 			}
 		});
 	});
@@ -135,6 +173,69 @@ $(function () {
 		$('#submitRemove').hide();
 		$('#chooseRemoveCookiesBox').hide();
 		displayStatus('#rStatus', displayMsg, '');
+	}
+	//Undo last remove
+	var lastRemoveArray = [];
+	function addLastRemoveArray(aCookie,selectedLength){
+		lastRemoveArray.push(aCookie);
+		if (selectedLength === lastRemoveArray.length){
+			saveLastRemove(lastRemoveArray);
+		}
+	}
+	function saveLastRemove(cookieArray){
+		//export
+		var lastRemoveString = getCopyText(cookieArray);
+		
+			chrome.storage.local.set({
+				'lastRemove' : lastRemoveString
+			},function(){
+				for (var i =0; i < cookieArray.length;i++){
+					var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
+					chrome.cookies.remove(remCookie);
+				}
+				lastRemoveArray.length=0;
+				resetManualRemove("Success Remove");
+				$('#undoLastRemove').attr('disabled',false);
+			});
+		
+	}
+
+	$('#undoLastRemove').click(function(){ // restore last remove
+		$('#undoLastRemove').attr('disabled',true);
+		chrome.storage.local.get('lastRemove', function (results) {
+			var lastRemoveString = results.lastRemove;
+			if (chrome.extension.getBackgroundPage().isundefinednull(lastRemoveString)) {
+				resetManualRemove("No Past Cookies");
+			}else{
+				//import
+				try{
+					myImport(lastRemoveString);
+					resetManualRemove("Success Undo");
+				}catch(err){
+					resetManualRemove(err);
+				}
+				clearUndo();
+			}	
+		});
+	});
+	//Clear Archive
+	$('#clearRemoveArchive').click(function(){
+		chrome.storage.local.get('lastRemove', function (results) {
+			var lastRemoveString = results.lastRemove;
+			if (chrome.extension.getBackgroundPage().isundefinednull(lastRemoveString)) {
+				resetManualRemove('Archive Is Empty');
+			}else{
+				clearUndo();
+				resetManualRemove('Archive Cleared Successfully');
+			}
+		});
+	});
+	function clearUndo(){
+		chrome.storage.local.remove('lastRemove',function(){
+			$('#undoLastRemove').attr('disabled',true);
+			$('#submitRemoveAll').attr('disabled',false);
+			$('#manualRemoveShowCookies').attr('disabled',false);
+		});
 	}
 	//ADD===============================================
 	$('#submitAdd').click(function () {
@@ -180,11 +281,12 @@ $(function () {
 	});
 	function updateAutocompleteDomain() {
 		chrome.cookies.getAll({}, function (cookieArray) {
+			cookieArray = sortByDomain(cookieArray);
 			var domainArray = [];
 			for (var i = 0; i < cookieArray.length; i++) {
-				domainArray.push(cookieArray[i].domain);
+				if (domainArray.indexOf(cookieArray[i].domain)=== -1)
+					domainArray.push(cookieArray[i].domain);
 			}
-			domainArray = jQuery.uniqueSort(domainArray);
 			$("#addCookie input[name=domain]").autocomplete({
 				source : domainArray
 			});
@@ -207,6 +309,16 @@ $(function () {
 	});
 
 	//UTILITIES*************************************************************
+	function sortByDomain(cookieArray){
+		cookieArray.sort(function(a,b){
+			var x = a.domain;
+			var y = b.domain;
+			if(x<y){return -1;};
+			if(x>y){return 1;}
+			return 0;
+		});
+		return cookieArray;
+	}
 	function isANumber(strVariable) {
 		var isNum = (!isNaN(strVariable));
 		return isNum;
@@ -264,13 +376,6 @@ $(function () {
 			onChange : null
 		});
 	}
-	//TOOLTIPS================================================
-	$('.tooltipElements').tooltip({
-		position : {
-			my : "center bottom-5",
-			at : "right top"
-		}
-	});
 	//DATE====================================================
 	$.datetimepicker.setLocale('en');
 	$('.datetimepicker').datetimepicker({
@@ -354,15 +459,32 @@ $(function () {
 				document.getElementById("myDomain").innerHTML = "Domain: <input type='text' class='compulsory' name='domain' value=" + cookieList[i].domain + " disabled></p>";
 				document.getElementById("myPath").innerHTML = "Path: <input type='text' name='path' value=" + cookieList[i].path + " disabled></p>";
 				document.getElementById("myName").innerHTML = "Name: <input type='text' class='compulsory' name='name' value=" + cookieList[i].name + " disabled></p>";
-				document.getElementById("myValue").innerHTML = "Value: </br><textarea name='value' cols=39 rows=5>" + cookieList[i].value + "</textarea></p>";
-				document.getElementById("myExpiration").innerHTML =
-					"<p>Expiration:" +
-					"<fieldset id='modDateContainer" + i + "'>" +
-					"<p name='modDateDate'><input type='radio' name='lifetime2'>Date: <input type='text' class='datetimepicker' disabled/></p>" +
-					"<p name='modDateDay'><input type='radio' name='lifetime2'>Days: <input type='text' size='5' disabled/></p>" +
-					"<p name='modDateSession'><input type='radio' name='lifetime2' checked>Session</p>" +
-					"</fieldset>" +
-					"</p>";
+				document.getElementById("myValue").innerHTML = "Value: </br><textarea name='value' cols=55 rows=5>" + cookieList[i].value + "</textarea></p>";
+
+				var expDate = new Date(cookieList[i].expirationDate * 1000);
+
+				if (expDate == "Invalid Date") {
+					document.getElementById("myExpiration").innerHTML =
+						"<p>Expiration:" +
+						"<fieldset id='modDateContainer" + i + "'>" +
+						"<p>This is a session cookie.</p>" +
+						"<p name='modDateDate'><input type='radio' name='lifetime2'>Date: <input type='text' class='datetimepicker' disabled/> <img src='calendaricon.png'></p>" +
+						"<p name='modDateDay'><input type='radio' name='lifetime2'>Days: <input type='text' size='5' disabled/></p>" +
+						"<p name='modDateSession'><input type='radio' name='lifetime2' checked>Session</p>" +
+						"</fieldset>" +
+						"</p>";
+				} else {
+					document.getElementById("myExpiration").innerHTML =
+						"<p>Expiration:" +
+						"<fieldset id='modDateContainer" + i + "'>" +
+						"<p>Current expiration:</p>" +
+						expDate +
+						"<p name='modDateDate'><input type='radio' name='lifetime2'>Date: <input type='text' class='datetimepicker' disabled/> <img src='calendaricon.png'></p>" +
+						"<p name='modDateDay'><input type='radio' name='lifetime2'>Days: <input type='text' size='5' disabled/></p>" +
+						"<p name='modDateSession'><input type='radio' name='lifetime2' checked>Session</p>" +
+						"</fieldset>" +
+						"</p>";
+				}
 
 				var myPanel = document.getElementById("outerPanel");
 				var element = $("<button id='button" + i + "' class = 'accordion'>" + cookieList[i].domain + " | " + cookieList[i].name + "</button>" + myPanel.innerHTML);
@@ -448,8 +570,7 @@ $(function () {
 				chrome.cookies.set(modCookie);
 
 				alert("Cookie has been successfully modified: " + modCookie.name);
-				reset("#modifyCookie");
-
+				getCurrentDomain();
 			});
 
 			//DATE====================================================
@@ -463,174 +584,274 @@ $(function () {
 	window.onload = getCurrentDomain;
 
 	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	document.getElementById("fileUpload").onchange = function () {
+
+		//document.getElementById("jpaste").innerHTML = "";
+		var file = this.files[0];
+		var reader = new FileReader();
+
+		if (file.type.match(/text.*/)) {
+
+			reader.onload = function () {
+
+				// Entire file
+				document.getElementById("jpaste").innerHTML = this.result;
+			};
+			reader.readAsText(file);
+
+		} else {
+
+			alert("File not supported! File must contain cookie data in JSON format.");
+		}
+		//document.getElementById("myForm").reset();
+	};
 
 	$("#submitImport").click(function () {
 
-		myImport();
+		try {
+			var z = $('#jpaste').val();
+			myImport(z);
+			$('#importDialog p').text('Cookies successfully imported');
+		} catch (err) {
+			$('#importDialog p').text(err);
+		}
+		$('#importDialog').dialog("open");
+		$('#jpaste').val('');
+	});
 
+	$("#importEncrypt").click(function () {
+
+		try {
+			var z = $('#jpaste').val();
+			importEncrypted(z);
+			$('#importDialog p').text('Cookies successfully imported');
+		} catch (err) {
+			$('#importDialog p').text(err);
+		}
+		$('#importDialog').dialog("open");
+		$('#jpaste').val('');
+	});
+
+	$("#passwordBoxImport").on("keyup", function () {
+
+		var textbox_value = $("#passwordBoxImport").val();
+
+		if (textbox_value != "") {
+			$("#importEncrypt").attr("disabled", false);
+		} else {
+			$("#importEncrypt").attr("disabled", true);
+		}
 	});
 
 	$('#importDialog').dialog({
 
 		autoOpen : false,
-
 		modal : true,
-
 		buttons : {
 
 			Ok : function () {
-
 				$(this).dialog("close");
-
 			}
-
 		}
-
 	});
 
-	function myImport() {
-
-		/*
-
-		var x = document.getElementById("frm1").find('input[name=fname').val();
-
-		var displayTxt = "";
-
-		var i;
-
-		for (i = 0; i < x.length ;i++) {
-
-		displayTxt += x.elements[i].value + "/";
-
-		}
-
-		 */
-
-		//var x = $('#frm1').find('input[name="fname"]').val();
-
-		//var y = $('#frm1').find('input[name="lname"]').val();
-
-		var z = $('#jpaste').val();
-
-		//displayStatus("#importstatus",x,y,z);
-
-		//$("#importstatus").text(x+" "+y +" "+ z);
+	function myImport(z) {
 
 		//here goes parsing function
 
-		var arr = JSON.parse(z);
+		try {
+			var arr = JSON.parse(z);
 
-		var i;
+			var i;
 
-		var out = "<table>";
+			var out = "<table>";
 
-		var impCookie = {};
+			var impCookie = {};
 
-		for (i = 0; i < arr.length; i++) {
+			for (i = 0; i < arr.length; i++) {
 
-			impCookie.name = arr[i].name;
+				impCookie.name = arr[i].name;
 
-			impCookie.domain = arr[i].domain;
+				impCookie.domain = arr[i].domain;
 
-			impCookie.value = arr[i].value;
+				impCookie.value = arr[i].value;
 
-			impCookie.expirationDate = arr[i].expirationDate;
+				impCookie.expirationDate = arr[i].expirationDate;
 
-			impCookie.secure = arr[i].secure;
+				impCookie.secure = arr[i].secure;
 
-			impCookie.httpOnly = arr[i].httpOnly;
+				impCookie.httpOnly = arr[i].httpOnly;
 
-			//impCookie.hostOnly = arr[1].hostOnly;
+				impCookie.path = arr[i].path;
 
-			//impCookie.session = arr[1].session; these two dont work
+				impCookie.storeId = arr[i].storeId;
 
-			impCookie.path = arr[i].path;
+				impCookie.url = arr[i].url;
 
-			impCookie.storeId = arr[i].storeId;
+				chrome.extension.getBackgroundPage().console.log(impCookie.hostOnly);
 
-			//impCookie.url = arr[i].domain.replace(".","https://www.");
+				chrome.cookies.set(impCookie);
 
-			/*if (arr[i].domain.substr(0,1) === "."){
+			}
+			out += "</table>";
 
-			impCookie.url = "http://www" + arr[i].domain;
+		} catch (err) {
+			throw "Import error: Format not recognized";
+		}
+	}
+
+	function importEncrypted(z) {
+
+		try {
+			var passwordValue = document.getElementById("passwordBoxImport").value;
+			var decrypted = CryptoJS.AES.decrypt(z, passwordValue).toString(CryptoJS.enc.Utf8);
+
+			//displayStatus("#importstatus",x,y,z);
+
+			//$("#importstatus").text(x+" "+y +" "+ z);
+
+			//here goes parsing function
+
+			var arr = JSON.parse(decrypted);
+
+			var i;
+
+			var out = "<table>";
+
+			var impCookie = {};
+
+			for (i = 0; i < arr.length; i++) {
+
+				impCookie.name = arr[i].name;
+
+				impCookie.domain = arr[i].domain;
+
+				impCookie.value = arr[i].value;
+
+				impCookie.expirationDate = arr[i].expirationDate;
+
+				impCookie.secure = arr[i].secure;
+
+				impCookie.httpOnly = arr[i].httpOnly;
+
+				//impCookie.hostOnly = arr[1].hostOnly;
+
+				//impCookie.session = arr[1].session; these two dont work
+
+				impCookie.path = arr[i].path;
+
+				impCookie.storeId = arr[i].storeId;
+
+				impCookie.url = arr[i].url;
+
+				chrome.extension.getBackgroundPage().console.log(impCookie.hostOnly);
+
+				chrome.cookies.set(impCookie);
 
 			}
 
-			else if (arr[i].domain.substr(0,1) !== "."){
+			out += "</table>";
 
-			impCookie.url = "http://www." + arr[i].domain;
-
-			}*/
-
-			impCookie.url = arr[i].url;
-
-			chrome.extension.getBackgroundPage().console.log(impCookie.hostOnly);
-
-			chrome.cookies.set(impCookie);
-
-			//table output
-
-			/*
-
-			out += "<tr><td>" +
-
-			arr[i].domain + "</td><td>" +
-
-			arr[i].expirationDate + "</td><td>" +
-
-			arr[i].name + "</td><td>" +
-
-			arr[i].secure + "</td><td>" +
-
-			arr[i].httpOnly + "</td><td>" +
-
-			arr[i].session + "</td><td>" +
-
-			impCookie.url + "</td><td>" +
-
-			arr[i].path + "</td></tr>";*/
-
+		} catch (err) {
+			throw "Import Error: Format not recognized.";
 		}
-
-		out += "</table>";
-
-		//$("#importstatus").html(out);
-
-		//alert("Cookies successfully imported.")
-
-		$('#importDialog').dialog("open");
-
 	}
 
 	// GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//http://stackoverflow.com/questions/18436245/how-to-fetch-url-of-current-tab-in-my-chrome-extention-using-javascript
 
-	$("#ExportClipboard").click(function () {
+	$("#exportClipboard").click(function () {
+		toClipboard();
+	});
 
-		//http://stackoverflow.com/questions/18436245/how-to-fetch-url-of-current-tab-in-my-chrome-extention-using-javascript
+	$("#exportFile").click(function () {
 
-		exportClip();
+		toFile();
+	});
 
+	$("#exportEncrypt").click(function () {
+
+		toEncrypt();
+	});
+
+	$("#passwordBoxExport").on("keyup", function () {
+
+		var textbox_value = $("#passwordBoxExport").val();
+
+		if (textbox_value != "") {
+			$("#exportEncrypt").attr("disabled", false);
+		} else {
+			$("#exportEncrypt").attr("disabled", true);
+		}
 	});
 
 	$('#exportDialog').dialog({
 
 		autoOpen : false,
-
 		modal : true,
-
 		buttons : {
 
 			Ok : function () {
-
 				$(this).dialog("close");
-
 			}
-
 		}
-
 	});
 
-	function exportClip() {
+	function getCopyText(cookieArray) {
+
+		var text = '';
+
+		text += '[' + '\n';
+		for (var i = 0; i < cookieArray.length; i++) {
+			var cookieUrl = 'http' + ((cookieArray[i].secure) ? 's' : '') + '://' + cookieArray[i].domain + cookieArray[i].path;
+			text += '{' + '\n';
+			//text += '    "url": "' + filter.url + '", \n';
+			text += '    "url": "' + cookieUrl + '", \n';
+			text += '    "domain": "' + cookieArray[i].domain + '", \n';
+			if (typeof cookieArray[i].expirationDate !== "undefined") {
+				text += '    "expirationDate": ' + cookieArray[i].expirationDate + ', \n';
+			}
+			text += '    "hostOnly": ' + cookieArray[i].hostOnly + ', \n';
+			text += '    "httpOnly": ' + cookieArray[i].httpOnly + ', \n';
+			text += '    "name": "' + cookieArray[i].name + '", \n';
+			text += '    "path": "' + cookieArray[i].path + '", \n';
+			text += '    "sameSite": "' + cookieArray[i].sameSite + '", \n';
+			text += '    "secure": ' + cookieArray[i].secure + ', \n';
+			text += '    "session": ' + cookieArray[i].session + ', \n';
+			text += '    "storeId": "' + cookieArray[i].storeId + '", \n';
+			text += '    "value": "' + cookieArray[i].value + '", \n';
+			text += '    "id": ' + (i + 1) + ' \n';
+			text += '}';
+			if (i + 1 < cookieArray.length) {
+				text += ',';
+			}
+			text += '\n';
+		}
+		text += ']';
+		return text;
+	}
+
+	function copyTextToClipboard(text) {
+
+		var textArea = document.createElement("textarea");
+
+		textArea.value = text;
+
+		document.body.appendChild(textArea);
+
+		textArea.select();
+
+		try {
+			var successful = document.execCommand('copy');
+		} catch (err) {
+			throw '';
+		}
+
+		document.body.removeChild(textArea);
+	}
+
+	function toClipboard() {
 
 		chrome.tabs.query({
 			currentWindow : true,
@@ -645,92 +866,103 @@ $(function () {
 
 			chrome.cookies.getAll(filter, function (cookieArray) {
 
-				var text = '';
+				var text = getCopyText(cookieArray);
 
-				text += '[' + '\n';
-
-				for (var i = 0; i < cookieArray.length; i++) {
-
-					var cookieUrl = 'http' + ((cookieArray[i].secure) ? 's' : '') + '://' + cookieArray[i].domain;
-
-					text += '{' + '\n';
-
-					text += '    "url": "' + filter.url + '", \n';
-
-					text += '    "domain": "' + cookieArray[i].domain + '", \n';
-
-					if (typeof cookieArray[i].expirationDate !== "undefined") {
-
-						text += '    "expirationDate": ' + cookieArray[i].expirationDate + ', \n';
-
-					}
-
-					text += '    "hostOnly": ' + cookieArray[i].hostOnly + ', \n';
-
-					text += '    "httpOnly": ' + cookieArray[i].httpOnly + ', \n';
-
-					text += '    "name": "' + cookieArray[i].name + '", \n';
-
-					text += '    "path": "' + cookieArray[i].path + '", \n';
-
-					text += '    "sameSite": "' + cookieArray[i].sameSite + '", \n';
-
-					text += '    "secure": ' + cookieArray[i].secure + ', \n';
-
-					text += '    "session": ' + cookieArray[i].session + ', \n';
-
-					text += '    "storeId": "' + cookieArray[i].storeId + '", \n';
-
-					text += '    "value": "' + cookieArray[i].value + '", \n';
-
-					text += '    "id": ' + (i + 1) + ' \n';
-
-					text += '}';
-
-					if (i + 1 < cookieArray.length) {
-
-						text += ',';
-
-					}
-
-					text += '\n';
-
+				try {
+					copyTextToClipboard(text);
+					$("#exportDialog p").text("Cookies from www" + cookieArray[0].domain + " successfully copied to clipboard");
+				} catch (err) {
+					$("#exportDialog p").text("Export error");
 				}
-
-				text += ']';
-
-				copyTextToClipboard(text);
-
-				//alert("Cookies from "+filter.url+" has been exported to clipboard");
-
-				$("#exportDialog").html("Cookies from " + cookieArray[0].domain + " successfully exported");
-
 				$('#exportDialog').dialog("open");
-
 			});
-
 		});
-
 	}
 
-	function copyTextToClipboard(text) {
+	function toFile() {
 
-		var textArea = document.createElement("textarea");
+		chrome.tabs.query({
+			currentWindow : true,
+			active : true
+		}, function (tabs) {
 
-		textArea.value = text;
+			var exportFilter = tabs[0].url;
 
-		document.body.appendChild(textArea);
+			var filter = {};
 
-		textArea.select();
+			filter.url = exportFilter;
 
-		try {
+			chrome.cookies.getAll(filter, function (cookieArray) {
 
-			var successful = document.execCommand('copy');
+				var text = getCopyText(cookieArray);
 
-		} catch (err) {}
+				var textFile = null,
+				makeTextFile = function (text2) {
+					var data = new Blob([text2], {
+							type : 'text/plain'
+						});
 
-		document.body.removeChild(textArea);
+					// If we are replacing a previously generated file we need to
+					// manually revoke the object URL to avoid memory leaks.
+					if (textFile !== null) {
+						window.URL.revokeObjectURL(textFile);
+					}
 
+					textFile = window.URL.createObjectURL(data);
+
+					return textFile;
+				};
+
+				$("#downloadLink1").attr("download", tabs[0].url + ".txt");
+				var link = document.getElementById('downloadLink1');
+				link.href = makeTextFile(text);
+				link.style.display = 'block';
+			});
+		});
 	}
 
+	function toEncrypt() {
+
+		chrome.tabs.query({
+			currentWindow : true,
+			active : true
+		}, function (tabs) {
+
+			var exportFilter = tabs[0].url;
+
+			var filter = {};
+
+			filter.url = exportFilter;
+
+			chrome.cookies.getAll(filter, function (cookieArray) {
+
+				var text = getCopyText(cookieArray);
+
+				var passwordValue = document.getElementById("passwordBoxExport").value;
+				var encrypted = CryptoJS.AES.encrypt(text, passwordValue);
+
+				var textFile = null,
+				makeTextFile = function (text2) {
+					var data = new Blob([text2], {
+							type : 'text/plain'
+						});
+
+					// If we are replacing a previously generated file we need to
+					// manually revoke the object URL to avoid memory leaks.
+					if (textFile !== null) {
+						window.URL.revokeObjectURL(textFile);
+					}
+
+					textFile = window.URL.createObjectURL(data);
+
+					return textFile;
+				};
+
+				$("#downloadLink2").attr("download", tabs[0].url + "(encrypted).txt");
+				var link = document.getElementById('downloadLink2');
+				link.href = makeTextFile(encrypted);
+				link.style.display = 'block';
+			});
+		});
+	}
 });
