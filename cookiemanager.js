@@ -12,20 +12,20 @@ $(function () {
 	restoreTabOptions();
 	//SAVE A SESSION OPTIONS************************************************
 	function saveSessionOptions(option) {
- 		chrome.storage.sync.set({
+		chrome.storage.sync.set({
 			'inSession' : option
 		});
 	}
 	function restoreSessionOptions() { // only use in initialisation
 		chrome.storage.sync.get('inSession', function (results) {
 			if (!chrome.extension.getBackgroundPage().isundefinednull(results.inSession)) {
-				if (results.inSession){
+				if (results.inSession) {
 					setOnSession();
 				}
 			}
 		});
 	}
-	function saveTabOptions(option){
+	function saveTabOptions(option) {
 		chrome.storage.sync.set({
 			'inTab' : option
 		});
@@ -42,13 +42,13 @@ $(function () {
 	//LAST REMOVE OPTIONS************************************************
 	chrome.storage.local.get('lastRemove', function (results) {
 		if (chrome.extension.getBackgroundPage().isundefinednull(results.lastRemove)) {
-			$('#undoLastRemove').attr('disabled',true);
+			$('#undoLastRemove').attr('disabled', true);
 		}
 	});
 	//REMOVE====================================================
 	$('.autoRemoveHelp').tooltip();
 	//AUTO REMOVE TOGGLE BUTTONS----------------------
-	function setAutoButton(ele,buttonText) {
+	function setAutoButton(ele, buttonText) {
 		$(ele).find('button').text(buttonText);
 		$(ele).toggleClass('autoRemoveOn');
 	}
@@ -58,15 +58,15 @@ $(function () {
 		resetManualRemove('');
 		var status = $('#autoTabRemoveButton').text();
 		if (status === 'ON') {
-			setAutoButton('#autoTabRemove','OFF');
+			setAutoButton('#autoTabRemove', 'OFF');
 			chrome.extension.getBackgroundPage().removeTabListener();
 			saveTabOptions(false);
 		} else if (status === 'OFF') {
 			setOnTab();
 		}
 	});
-	function setOnTab(){
-		setAutoButton('#autoTabRemove','ON');
+	function setOnTab() {
+		setAutoButton('#autoTabRemove', 'ON');
 		chrome.extension.getBackgroundPage().addTabListener();
 		saveTabOptions(true);
 	}
@@ -76,7 +76,7 @@ $(function () {
 		resetManualRemove('');
 		var status = $('#autoRemoveButton').text();
 		if (status === 'ON') {
-			setAutoButton('#autoRemove','OFF');
+			setAutoButton('#autoRemove', 'OFF');
 			chrome.extension.getBackgroundPage().removeSessionListener();
 			saveSessionOptions(false);
 		} else if (status === 'OFF') {
@@ -98,9 +98,9 @@ $(function () {
 			}
 		}
 	});
-	function setOnSession(){
+	function setOnSession() {
 		saveSessionOptions(true);
-		setAutoButton('#autoRemove','ON');
+		setAutoButton('#autoRemove', 'ON');
 		setAllCookiesToSession();
 		chrome.extension.getBackgroundPage().addSessionListener();
 	}
@@ -145,7 +145,7 @@ $(function () {
 			$('#' + chooseCookiesBox).show(500);
 		}
 	}
-	
+
 	//When user submit cookies for removal: either by selection/remove all
 	$('#submitRemove').click(function () {
 		var selectedLength = $('#chooseRemoveCookies option:selected').length;
@@ -154,8 +154,8 @@ $(function () {
 				var selectedCookie = {};
 				selectedCookie.url = $(this).attr('data-description');
 				selectedCookie.name = $(this).val();
-				chrome.cookies.get(selectedCookie,function(aCookie){
-					addLastRemoveArray(aCookie,selectedLength);
+				chrome.cookies.get(selectedCookie, function (aCookie) {
+					addLastRemoveArray(aCookie, selectedLength);
 				});
 			});
 		}
@@ -176,65 +176,65 @@ $(function () {
 	}
 	//Undo last remove
 	var lastRemoveArray = [];
-	function addLastRemoveArray(aCookie,selectedLength){
+	function addLastRemoveArray(aCookie, selectedLength) {
 		lastRemoveArray.push(aCookie);
-		if (selectedLength === lastRemoveArray.length){
+		if (selectedLength === lastRemoveArray.length) {
 			saveLastRemove(lastRemoveArray);
 		}
 	}
-	function saveLastRemove(cookieArray){
+	function saveLastRemove(cookieArray) {
 		//export
 		var lastRemoveString = getCopyText(cookieArray);
-		
-			chrome.storage.local.set({
-				'lastRemove' : lastRemoveString
-			},function(){
-				for (var i =0; i < cookieArray.length;i++){
-					var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
+
+		chrome.storage.local.set({
+			'lastRemove' : lastRemoveString
+		}, function () {
+			for (var i = 0; i < cookieArray.length; i++) {
+				var remCookie = chrome.extension.getBackgroundPage().copyAsRemoveCookie(cookieArray[i])
 					chrome.cookies.remove(remCookie);
-				}
-				lastRemoveArray.length=0;
-				resetManualRemove("Success Remove");
-				$('#undoLastRemove').attr('disabled',false);
-			});
-		
+			}
+			lastRemoveArray.length = 0;
+			resetManualRemove("Success Remove");
+			$('#undoLastRemove').attr('disabled', false);
+		});
+
 	}
 
-	$('#undoLastRemove').click(function(){ // restore last remove
-		$('#undoLastRemove').attr('disabled',true);
+	$('#undoLastRemove').click(function () { // restore last remove
+		$('#undoLastRemove').attr('disabled', true);
 		chrome.storage.local.get('lastRemove', function (results) {
 			var lastRemoveString = results.lastRemove;
 			if (chrome.extension.getBackgroundPage().isundefinednull(lastRemoveString)) {
 				resetManualRemove("No Past Cookies");
-			}else{
+			} else {
 				//import
-				try{
+				try {
 					myImport(lastRemoveString);
 					resetManualRemove("Success Undo");
-				}catch(err){
+				} catch (err) {
 					resetManualRemove(err);
 				}
 				clearUndo();
-			}	
+			}
 		});
 	});
 	//Clear Archive
-	$('#clearRemoveArchive').click(function(){
+	$('#clearRemoveArchive').click(function () {
 		chrome.storage.local.get('lastRemove', function (results) {
 			var lastRemoveString = results.lastRemove;
 			if (chrome.extension.getBackgroundPage().isundefinednull(lastRemoveString)) {
 				resetManualRemove('Archive Is Empty');
-			}else{
+			} else {
 				clearUndo();
 				resetManualRemove('Archive Cleared Successfully');
 			}
 		});
 	});
-	function clearUndo(){
-		chrome.storage.local.remove('lastRemove',function(){
-			$('#undoLastRemove').attr('disabled',true);
-			$('#submitRemoveAll').attr('disabled',false);
-			$('#manualRemoveShowCookies').attr('disabled',false);
+	function clearUndo() {
+		chrome.storage.local.remove('lastRemove', function () {
+			$('#undoLastRemove').attr('disabled', true);
+			$('#submitRemoveAll').attr('disabled', false);
+			$('#manualRemoveShowCookies').attr('disabled', false);
 		});
 	}
 	//ADD===============================================
@@ -284,7 +284,7 @@ $(function () {
 			cookieArray = sortByDomain(cookieArray);
 			var domainArray = [];
 			for (var i = 0; i < cookieArray.length; i++) {
-				if (domainArray.indexOf(cookieArray[i].domain)=== -1)
+				if (domainArray.indexOf(cookieArray[i].domain) === -1)
 					domainArray.push(cookieArray[i].domain);
 			}
 			$("#addCookie input[name=domain]").autocomplete({
@@ -309,12 +309,16 @@ $(function () {
 	});
 
 	//UTILITIES*************************************************************
-	function sortByDomain(cookieArray){
-		cookieArray.sort(function(a,b){
+	function sortByDomain(cookieArray) {
+		cookieArray.sort(function (a, b) {
 			var x = a.domain;
 			var y = b.domain;
-			if(x<y){return -1;};
-			if(x>y){return 1;}
+			if (x < y) {
+				return -1;
+			};
+			if (x > y) {
+				return 1;
+			}
 			return 0;
 		});
 		return cookieArray;
@@ -567,10 +571,13 @@ $(function () {
 				modCookie.httpOnly = $($(this).closest("div").find('input[name=httpOnly]')).is(':checked');
 				modCookie.url = "http://" + modCookie.domain;
 
-				chrome.cookies.set(modCookie);
-
-				alert("Cookie has been successfully modified: " + modCookie.name);
-				getCurrentDomain();
+				try {
+					chrome.cookies.set(modCookie);
+					$('#modifyDialog p').text("Cookie has been successfully modified: " + modCookie.name);
+				} catch (err) {
+					$('#modifyDialog p').text(err);
+				}
+				$('#modifyDialog').dialog("open");
 			});
 
 			//DATE====================================================
@@ -578,13 +585,25 @@ $(function () {
 			$('.datetimepicker').datetimepicker({
 				minDate : 0
 			});
+
+			$('#modifyDialog').dialog({
+
+				autoOpen : false,
+				modal : true,
+				buttons : {
+
+					Ok : function () {
+						$(this).dialog("close");
+					}
+				}
+			});
 		});
 	}
 
 	window.onload = getCurrentDomain;
 
 	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	
+
 	document.getElementById("fileUpload").onchange = function () {
 
 		//document.getElementById("jpaste").innerHTML = "";
@@ -604,7 +623,6 @@ $(function () {
 
 			alert("File not supported! File must contain cookie data in JSON format.");
 		}
-		//document.getElementById("myForm").reset();
 	};
 
 	$("#submitImport").click(function () {
@@ -612,7 +630,7 @@ $(function () {
 		try {
 			var z = $('#jpaste').val();
 			myImport(z);
-			$('#importDialog p').text('Cookies successfully imported');
+			$('#importDialog p').text('Cookies imported successfully!');
 		} catch (err) {
 			$('#importDialog p').text(err);
 		}
@@ -625,7 +643,7 @@ $(function () {
 		try {
 			var z = $('#jpaste').val();
 			importEncrypted(z);
-			$('#importDialog p').text('Cookies successfully imported');
+			$('#importDialog p').text('Cookies imported successfully!');
 		} catch (err) {
 			$('#importDialog p').text(err);
 		}
@@ -688,8 +706,6 @@ $(function () {
 				impCookie.storeId = arr[i].storeId;
 
 				impCookie.url = arr[i].url;
-
-				chrome.extension.getBackgroundPage().console.log(impCookie.hostOnly);
 
 				chrome.cookies.set(impCookie);
 
@@ -754,7 +770,7 @@ $(function () {
 			out += "</table>";
 
 		} catch (err) {
-			throw "Import Error: Format not recognized.";
+			throw "Import error: Format not recognized.";
 		}
 	}
 
@@ -965,4 +981,65 @@ $(function () {
 			});
 		});
 	}
+	// EXPORTIMPORTPROFILE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	$('#exportProfile').click(function () {
+		//export
+		chrome.tabs.query({
+			currentWindow : true,
+			active : true
+		}, function (tabs) {
+
+			var exportFilter = tabs[0].url;
+			var filter = {};
+			filter.url = exportFilter;
+
+			chrome.cookies.getAll(filter, function (cookieArray) {
+				var lastProfileString = getCopyText(cookieArray);
+				chrome.storage.sync.set({
+					'lastProfile' : lastProfileString
+				}, function () {
+					$("#exportDialog p").text("Profile has been successfully exported");
+					$('#exportDialog').dialog("open");
+				});
+			});
+		});
+	});
+
+	$('#importProfile').click(function () { // restore last remove
+		chrome.storage.sync.get('lastProfile', function (results) {
+			var lastProfileString = results.lastProfile;
+			if (!chrome.extension.getBackgroundPage().isundefinednull(lastProfileString)) {
+				//import
+				try {
+					myImport(lastProfileString);
+					$('#importDialog p').text('Profile has been successfully imported');
+				} catch (err) {
+					$('#importDialog p').text(err);
+				}
+				$('#importDialog').dialog("open");
+			}
+		});
+	});
+
+	$('#clearProfileI').click(function () {
+
+		try {
+			chrome.storage.sync.remove('lastProfile');
+			$('#importDialog p').text('Profile has been successfully cleared');
+		} catch (err) {
+			$('#importDialog p').text(err);
+		}
+		$('#importDialog').dialog("open");
+	});
+
+	$('#clearProfileE').click(function () {
+
+		try {
+			chrome.storage.sync.remove('lastProfile');
+			$('#exportDialog p').text('Profile has been successfully cleared');
+		} catch (err) {
+			$('#exportDialog p').text(err);
+		}
+		$('#exportDialog').dialog("open");
+	});
 });
