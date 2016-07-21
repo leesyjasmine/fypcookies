@@ -573,7 +573,7 @@ $(function () {
 
 				try {
 					chrome.cookies.set(modCookie);
-					$('#modifyDialog p').text("Cookie has been successfully modified: " + modCookie.name);
+					$('#modifyDialog p').text("The following cookie has been successfully modified: " + modCookie.name);
 				} catch (err) {
 					$('#modifyDialog p').text(err);
 				}
@@ -603,25 +603,29 @@ $(function () {
 	window.onload = getCurrentDomain;
 
 	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//this is so that every file upload attempt is registered as a different one
+	document.getElementById("fileUpload").onclick = function () {
+		this.value = null;
+	};
 
 	document.getElementById("fileUpload").onchange = function () {
 
-		//document.getElementById("jpaste").innerHTML = "";
+		document.getElementById("jpaste").innerHTML = "";
+
 		var file = this.files[0];
 		var reader = new FileReader();
 
 		if (file.type.match(/text.*/)) {
 
 			reader.onload = function () {
-
 				// Entire file
 				document.getElementById("jpaste").innerHTML = this.result;
-			};
+			}
 			reader.readAsText(file);
-
 		} else {
 
-			alert("File not supported! File must contain cookie data in JSON format.");
+			$("#importDialog p").text("File not supported! Ensure that the file contains cookie data in JSON format.");
+			$("#importDialog").open;
 		}
 	};
 
@@ -630,12 +634,13 @@ $(function () {
 		try {
 			var z = $('#jpaste').val();
 			myImport(z);
-			$('#importDialog p').text('Cookies imported successfully!');
+			$('#importDialog p').text('Cookies have been successfully imported.');
 		} catch (err) {
 			$('#importDialog p').text(err);
 		}
 		$('#importDialog').dialog("open");
-		$('#jpaste').val('');
+		//$('#jpaste').val('');
+		document.getElementById("jpaste").innerHTML = "";
 	});
 
 	$("#importEncrypt").click(function () {
@@ -643,12 +648,15 @@ $(function () {
 		try {
 			var z = $('#jpaste').val();
 			importEncrypted(z);
-			$('#importDialog p').text('Cookies imported successfully!');
+			$('#importDialog p').text('Cookies have been successfully imported.');
 		} catch (err) {
 			$('#importDialog p').text(err);
 		}
 		$('#importDialog').dialog("open");
-		$('#jpaste').val('');
+		//$('#jpaste').val('');
+		document.getElementById("jpaste").innerHTML = "";
+		document.getElementById("passwordBoxImport").value = "";
+
 	});
 
 	$("#passwordBoxImport").on("keyup", function () {
@@ -760,8 +768,6 @@ $(function () {
 				impCookie.storeId = arr[i].storeId;
 
 				impCookie.url = arr[i].url;
-
-				chrome.extension.getBackgroundPage().console.log(impCookie.hostOnly);
 
 				chrome.cookies.set(impCookie);
 
@@ -886,7 +892,7 @@ $(function () {
 
 				try {
 					copyTextToClipboard(text);
-					$("#exportDialog p").text("Cookies from www" + cookieArray[0].domain + " successfully copied to clipboard");
+					$("#exportDialog p").text("Cookies from www" + cookieArray[0].domain + " have been successfully copied to the clipboard.");
 				} catch (err) {
 					$("#exportDialog p").text("Export error");
 				}
@@ -953,10 +959,9 @@ $(function () {
 			chrome.cookies.getAll(filter, function (cookieArray) {
 
 				var text = getCopyText(cookieArray);
-
 				var passwordValue = document.getElementById("passwordBoxExport").value;
+				document.getElementById("passwordBoxExport").value = "";
 				var encrypted = CryptoJS.AES.encrypt(text, passwordValue);
-
 				var textFile = null,
 				makeTextFile = function (text2) {
 					var data = new Blob([text2], {
@@ -998,7 +1003,7 @@ $(function () {
 				chrome.storage.sync.set({
 					'lastProfile' : lastProfileString
 				}, function () {
-					$("#exportDialog p").text("Profile has been successfully exported");
+					$("#exportDialog p").text("Cookies have been successfully exported.");
 					$('#exportDialog').dialog("open");
 				});
 			});
@@ -1006,18 +1011,23 @@ $(function () {
 	});
 
 	$('#importProfile').click(function () { // restore last remove
+
 		chrome.storage.sync.get('lastProfile', function (results) {
-			var lastProfileString = results.lastProfile;
-			if (!chrome.extension.getBackgroundPage().isundefinednull(lastProfileString)) {
-				//import
-				try {
-					myImport(lastProfileString);
-					$('#importDialog p').text('Profile has been successfully imported');
-				} catch (err) {
-					$('#importDialog p').text(err);
+			if (results.lastProfile) {
+				var lastProfileString = results.lastProfile;
+				if (!chrome.extension.getBackgroundPage().isundefinednull(lastProfileString)) {
+					//import
+					try {
+						myImport(lastProfileString);
+						$('#importDialog p').text('Cookies have been successfully imported.');
+					} catch (err) {
+						$('#importDialog p').text(err);
+					}
 				}
-				$('#importDialog').dialog("open");
+			} else {
+				$('#importDialog p').text('Unable to import from profile, did you export to profile first?');
 			}
+			$('#importDialog').dialog("open");
 		});
 	});
 
@@ -1025,7 +1035,7 @@ $(function () {
 
 		try {
 			chrome.storage.sync.remove('lastProfile');
-			$('#importDialog p').text('Profile has been successfully cleared');
+			$('#importDialog p').text('Synced cookies have been successfully cleared.');
 		} catch (err) {
 			$('#importDialog p').text(err);
 		}
@@ -1036,7 +1046,7 @@ $(function () {
 
 		try {
 			chrome.storage.sync.remove('lastProfile');
-			$('#exportDialog p').text('Profile has been successfully cleared');
+			$('#exportDialog p').text('Synced cookies have been successfully cleared.');
 		} catch (err) {
 			$('#exportDialog p').text(err);
 		}
