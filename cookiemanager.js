@@ -311,8 +311,8 @@ $(function () {
 	//UTILITIES*************************************************************
 	function sortByDomain(cookieArray) {
 		cookieArray.sort(function (a, b) {
-			var x = a.domain;
-			var y = b.domain;
+			var x = a.domain.toUpperCase();
+			var y = b.domain.toUpperCase();
 			if (x < y) {
 				return -1;
 			};
@@ -419,7 +419,8 @@ $(function () {
 	}
 
 	// MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+	window.onload = getCurrentDomain;
+	
 	function getCurrentDomain() {
 		chrome.tabs.query({
 			currentWindow : true,
@@ -437,28 +438,15 @@ $(function () {
 			listCurrentCookies(currentDomain);
 		});
 	}
-
 	function listCurrentCookies(retrievedDomain) {
 
 		chrome.cookies.getAll({
 			domain : retrievedDomain
 		}, function (cookieList) {
 			//sort domains alphabetically
-			cookieList.sort(function (a, b) {
-				var nameA = a.domain.toUpperCase();
-				var nameB = b.domain.toUpperCase();
-
-				if (nameA < nameB) {
-					return -1;
-				}
-				if (nameA > nameB) {
-					return 1;
-				}
-			});
-
+			cookieList=sortByDomain(cookieList);
 			//create accordion based on how many cookies were retrieved
 			for (i = 0; i < cookieList.length; i++) {
-
 				document.getElementById("myCounter").innerText = i;
 				document.getElementById("myDomain").innerHTML = "Domain: <input type='text' class='compulsory' name='domain' value=" + cookieList[i].domain + " disabled></p>";
 				document.getElementById("myPath").innerHTML = "Path: <input type='text' name='path' value=" + cookieList[i].path + " disabled></p>";
@@ -466,29 +454,18 @@ $(function () {
 				document.getElementById("myValue").innerHTML = "Value: </br><textarea name='value' cols=55 rows=5>" + cookieList[i].value + "</textarea></p>";
 
 				var expDate = new Date(cookieList[i].expirationDate * 1000);
-
+				var expString = "<p>Expiration:" + "<fieldset id='modDateContainer" + i + "'>";
 				if (expDate == "Invalid Date") {
-					document.getElementById("myExpiration").innerHTML =
-						"<p>Expiration:" +
-						"<fieldset id='modDateContainer" + i + "'>" +
-						"<p>This is a session cookie.</p>" +
-						"<p name='modDateDate'><input type='radio' name='lifetime2'>Date: <input type='text' class='datetimepicker' disabled/> <img src='calendaricon.png'></p>" +
-						"<p name='modDateDay'><input type='radio' name='lifetime2'>Days: <input type='text' size='5' disabled/></p>" +
-						"<p name='modDateSession'><input type='radio' name='lifetime2' checked>Session</p>" +
-						"</fieldset>" +
-						"</p>";
+					expString += "<p>This is a session cookie.</p>";
 				} else {
-					document.getElementById("myExpiration").innerHTML =
-						"<p>Expiration:" +
-						"<fieldset id='modDateContainer" + i + "'>" +
-						"<p>Current expiration:</p>" +
-						expDate +
-						"<p name='modDateDate'><input type='radio' name='lifetime2'>Date: <input type='text' class='datetimepicker' disabled/> <img src='calendaricon.png'></p>" +
+					expString += "<p>Current expiration:</p>" + expDate;
+				}
+				expString +="<p name='modDateDate'><input type='radio' name='lifetime2'>Date: <input type='text' class='datetimepicker' disabled/> <img src='calendaricon.png'></p>" +
 						"<p name='modDateDay'><input type='radio' name='lifetime2'>Days: <input type='text' size='5' disabled/></p>" +
 						"<p name='modDateSession'><input type='radio' name='lifetime2' checked>Session</p>" +
 						"</fieldset>" +
 						"</p>";
-				}
+				document.getElementById("myExpiration").innerHTML = expString;
 
 				var myPanel = document.getElementById("outerPanel");
 				var element = $("<button id='button" + i + "' class = 'accordion'>" + cookieList[i].domain + " | " + cookieList[i].name + "</button>" + myPanel.innerHTML);
@@ -508,14 +485,10 @@ $(function () {
 			}
 
 			$("input[name=lifetime2]:radio").click(function () {
-
 				//returns id of the selected element
 				checkedElementID = $('input[name=lifetime2]:checked').attr('id');
-
 				var m = $(this).parents(".panel").find("#myCounter").text();
-
 				$("#modDateContainer" + m + " p").each(function () {
-
 					var isChecked = $(this).find("input[name=lifetime2]:radio").is(":checked");
 					var textBox = $(this).find("input[type=text]");
 					var hasInputID = false;
@@ -524,7 +497,6 @@ $(function () {
 						hasInputID = true;
 					}
 					if (isChecked) {
-
 						if (hasInputID) {
 							$(textBox).attr('disabled', false);
 						}
@@ -539,15 +511,12 @@ $(function () {
 
 			//original submitModify function
 			$(".modClass").click(function () {
-
 				var c = $(this).closest("div").find("#myCounter").text();
-
 				var modCookie = {};
-
 				modCookie.domain = cookieList[c].domain;
 				modCookie.name = cookieList[c].name;
 				modCookie.value = $(this).closest("div").find('textarea[name=value]').val();
-
+				
 				var checkedRadioElement = $("#modDateContainer" + c).find("input[name=lifetime2]:checked");
 				var lifetimeElement = checkedRadioElement.parent().find("input[type=text]");
 
@@ -587,7 +556,6 @@ $(function () {
 			});
 
 			$('#modifyDialog').dialog({
-
 				autoOpen : false,
 				modal : true,
 				buttons : {
@@ -599,231 +567,141 @@ $(function () {
 			});
 		});
 	}
-
-	window.onload = getCurrentDomain;
-
 	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//this is so that every file upload attempt is registered as a different one
 	document.getElementById("fileUpload").onclick = function () {
 		this.value = null;
 	};
-
 	document.getElementById("fileUpload").onchange = function () {
-
 		document.getElementById("jpaste").innerHTML = "";
-
 		var file = this.files[0];
 		var reader = new FileReader();
-
 		if (file.type.match(/text.*/)) {
-
 			reader.onload = function () {
 				// Entire file
 				document.getElementById("jpaste").innerHTML = this.result;
 			}
 			reader.readAsText(file);
 		} else {
-
 			$("#importDialog p").text("File not supported! Ensure that the file contains cookie data in JSON format.");
 			$("#importDialog").open;
 		}
 	};
-
-	$("#submitImport").click(function () {
-
-		try {
-			var z = $('#jpaste').val();
-			myImport(z);
-			$('#importDialog p').text('Cookies have been successfully imported.');
-		} catch (err) {
-			$('#importDialog p').text(err);
-		}
-		$('#importDialog').dialog("open");
-		//$('#jpaste').val('');
-		document.getElementById("jpaste").innerHTML = "";
-	});
-
-	$("#importEncrypt").click(function () {
-
-		try {
-			var z = $('#jpaste').val();
-			importEncrypted(z);
-			$('#importDialog p').text('Cookies have been successfully imported.');
-		} catch (err) {
-			$('#importDialog p').text(err);
-		}
-		$('#importDialog').dialog("open");
-		//$('#jpaste').val('');
-		document.getElementById("jpaste").innerHTML = "";
-		document.getElementById("passwordBoxImport").value = "";
-
-	});
-
 	$("#passwordBoxImport").on("keyup", function () {
-
 		var textbox_value = $("#passwordBoxImport").val();
-
 		if (textbox_value != "") {
 			$("#importEncrypt").attr("disabled", false);
 		} else {
 			$("#importEncrypt").attr("disabled", true);
 		}
 	});
-
 	$('#importDialog').dialog({
-
 		autoOpen : false,
 		modal : true,
 		buttons : {
-
 			Ok : function () {
 				$(this).dialog("close");
 			}
 		}
 	});
-
+	$("#submitImport").click(function () {
+		toImport(false);
+	});
+	$("#importEncrypt").click(function () {
+		toImport(true);
+	});
+	function toImport(toEncrypt){ // encryption is boolean true or false
+		try {
+			var z = $('#jpaste').val();
+			if (toEncrypt){
+				var passwordValue = document.getElementById("passwordBoxImport").value;
+				z = CryptoJS.AES.decrypt(z, passwordValue).toString(CryptoJS.enc.Utf8);
+				document.getElementById("passwordBoxImport").value = "";
+			}
+			myImport(z);
+			$('#importDialog p').text('Cookies have been successfully imported.');
+		} catch (err) {
+			$('#importDialog p').text(err);
+		}
+		$('#importDialog').dialog("open");
+		document.getElementById("jpaste").innerHTML = "";
+		$('#fileUpload').val('');
+	}
 	function myImport(z) {
-
 		//here goes parsing function
-
 		try {
 			var arr = JSON.parse(z);
-
 			var i;
-
-			var out = "<table>";
-
 			var impCookie = {};
-
 			for (i = 0; i < arr.length; i++) {
-
 				impCookie.name = arr[i].name;
-
 				impCookie.domain = arr[i].domain;
-
 				impCookie.value = arr[i].value;
-
 				impCookie.expirationDate = arr[i].expirationDate;
-
 				impCookie.secure = arr[i].secure;
-
 				impCookie.httpOnly = arr[i].httpOnly;
-
 				impCookie.path = arr[i].path;
-
 				impCookie.storeId = arr[i].storeId;
-
 				impCookie.url = arr[i].url;
-
 				chrome.cookies.set(impCookie);
-
 			}
-			out += "</table>";
-
 		} catch (err) {
 			throw "Import error: Format not recognized";
 		}
 	}
-
-	function importEncrypted(z) {
-
-		try {
-			var passwordValue = document.getElementById("passwordBoxImport").value;
-			var decrypted = CryptoJS.AES.decrypt(z, passwordValue).toString(CryptoJS.enc.Utf8);
-
-			//displayStatus("#importstatus",x,y,z);
-
-			//$("#importstatus").text(x+" "+y +" "+ z);
-
-			//here goes parsing function
-
-			var arr = JSON.parse(decrypted);
-
-			var i;
-
-			var out = "<table>";
-
-			var impCookie = {};
-
-			for (i = 0; i < arr.length; i++) {
-
-				impCookie.name = arr[i].name;
-
-				impCookie.domain = arr[i].domain;
-
-				impCookie.value = arr[i].value;
-
-				impCookie.expirationDate = arr[i].expirationDate;
-
-				impCookie.secure = arr[i].secure;
-
-				impCookie.httpOnly = arr[i].httpOnly;
-
-				//impCookie.hostOnly = arr[1].hostOnly;
-
-				//impCookie.session = arr[1].session; these two dont work
-
-				impCookie.path = arr[i].path;
-
-				impCookie.storeId = arr[i].storeId;
-
-				impCookie.url = arr[i].url;
-
-				chrome.cookies.set(impCookie);
-
+	$('#importProfile').click(function () { // restore last remove
+		chrome.storage.sync.get('lastProfile', function (results) {
+			if (results.lastProfile) {
+				var lastProfileString = results.lastProfile;
+				if (!chrome.extension.getBackgroundPage().isundefinednull(lastProfileString)) {
+					//import
+					try {
+						myImport(lastProfileString);
+						$('#importDialog p').text('Cookies have been successfully imported.');
+					} catch (err) {
+						$('#importDialog p').text(err);
+					}
+				}
+			} else {
+				$('#importDialog p').text('Unable to import from profile, did you export to profile first?');
 			}
-
-			out += "</table>";
-
-		} catch (err) {
-			throw "Import error: Format not recognized.";
-		}
-	}
-
+			$('#importDialog').dialog("open");
+		});
+	});
 	// GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//http://stackoverflow.com/questions/18436245/how-to-fetch-url-of-current-tab-in-my-chrome-extention-using-javascript
 
 	$("#exportClipboard").click(function () {
-		toClipboard();
+		toExport("clipboard");
 	});
-
 	$("#exportFile").click(function () {
-
-		toFile();
+		toExport("file");
 	});
-
 	$("#exportEncrypt").click(function () {
-
-		toEncrypt();
+		toExport("encrypted file");
 	});
-
+	$("#exportProfile").click(function () {
+		toExport("profile");
+	});
 	$("#passwordBoxExport").on("keyup", function () {
-
 		var textbox_value = $("#passwordBoxExport").val();
-
 		if (textbox_value != "") {
 			$("#exportEncrypt").attr("disabled", false);
 		} else {
 			$("#exportEncrypt").attr("disabled", true);
 		}
 	});
-
 	$('#exportDialog').dialog({
-
 		autoOpen : false,
 		modal : true,
 		buttons : {
-
 			Ok : function () {
 				$(this).dialog("close");
 			}
 		}
 	});
-
 	function getCopyText(cookieArray) {
-
 		var text = '';
-
 		text += '[' + '\n';
 		for (var i = 0; i < cookieArray.length; i++) {
 			var cookieUrl = 'http' + ((cookieArray[i].secure) ? 's' : '') + '://' + cookieArray[i].domain + cookieArray[i].path;
@@ -853,203 +731,89 @@ $(function () {
 		text += ']';
 		return text;
 	}
-
-	function copyTextToClipboard(text) {
-
-		var textArea = document.createElement("textarea");
-
-		textArea.value = text;
-
-		document.body.appendChild(textArea);
-
-		textArea.select();
-
-		try {
-			var successful = document.execCommand('copy');
-		} catch (err) {
-			throw '';
-		}
-
-		document.body.removeChild(textArea);
-	}
-
-	function toClipboard() {
-
+	function toExport(option){
 		chrome.tabs.query({
 			currentWindow : true,
 			active : true
 		}, function (tabs) {
-
 			var exportFilter = tabs[0].url;
-
 			var filter = {};
-
 			filter.url = exportFilter;
-
 			chrome.cookies.getAll(filter, function (cookieArray) {
-
 				var text = getCopyText(cookieArray);
-
 				try {
-					copyTextToClipboard(text);
-					$("#exportDialog p").text("Cookies from www" + cookieArray[0].domain + " have been successfully copied to the clipboard.");
+					if(option === "clipboard") // to clipboard
+						toClipboard(text);
+					else if (option === "file") // to file
+						toFile(text,'downloadLink1',exportFilter);
+					else if (option === "encrypted file") // to file w pw
+						toFile(getEncrypted(text),'downloadLink2',exportFilter);
+					else if (option === "profile")
+						toProfile(text);
+					$("#exportDialog p").text("Cookies from www" + cookieArray[0].domain + " successfully exported to "+ option +".");
 				} catch (err) {
-					$("#exportDialog p").text("Export error");
+					$("#exportDialog p").text("Export Error");
 				}
 				$('#exportDialog').dialog("open");
 			});
 		});
 	}
-
-	function toFile() {
-
-		chrome.tabs.query({
-			currentWindow : true,
-			active : true
-		}, function (tabs) {
-
-			var exportFilter = tabs[0].url;
-
-			var filter = {};
-
-			filter.url = exportFilter;
-
-			chrome.cookies.getAll(filter, function (cookieArray) {
-
-				var text = getCopyText(cookieArray);
-
-				var textFile = null,
-				makeTextFile = function (text2) {
-					var data = new Blob([text2], {
-							type : 'text/plain'
-						});
-
-					// If we are replacing a previously generated file we need to
-					// manually revoke the object URL to avoid memory leaks.
-					if (textFile !== null) {
-						window.URL.revokeObjectURL(textFile);
-					}
-
-					textFile = window.URL.createObjectURL(data);
-
-					return textFile;
-				};
-
-				$("#downloadLink1").attr("download", tabs[0].url + ".txt");
-				var link = document.getElementById('downloadLink1');
-				link.href = makeTextFile(text);
-				link.style.display = 'block';
-			});
+	function toClipboard(text) {
+		var textArea = document.createElement("textarea");
+		textArea.value = text;
+		document.body.appendChild(textArea);
+		textArea.select();
+		try {
+			var successful = document.execCommand('copy');
+		} catch (err) {
+			throw '';
+		}
+		document.body.removeChild(textArea);
+	}
+	function toFile(text,downloadElementName,url) {
+		var textFile = null,
+		makeTextFile = function (text2) {
+			var data = new Blob([text2], {type : 'text/plain'});
+			// If we are replacing a previously generated file we need to
+			// manually revoke the object URL to avoid memory leaks.
+			if (textFile !== null) {
+				window.URL.revokeObjectURL(textFile);
+			}	
+			textFile = window.URL.createObjectURL(data);
+			return textFile;
+		};
+		$("#"+downloadElementName).attr("download", url + ".txt");
+		var link = document.getElementById(downloadElementName);
+		link.href = makeTextFile(text);
+		link.style.display = 'block';		
+	}
+	function getEncrypted(text) {
+		var passwordValue = document.getElementById("passwordBoxExport").value;
+		document.getElementById("passwordBoxExport").value = "";
+		var encrypted = CryptoJS.AES.encrypt(text, passwordValue);
+		return encrypted;
+	}
+	function toProfile(text){
+		chrome.storage.sync.set({
+			'lastProfile' : text
 		});
 	}
-
-	function toEncrypt() {
-
-		chrome.tabs.query({
-			currentWindow : true,
-			active : true
-		}, function (tabs) {
-
-			var exportFilter = tabs[0].url;
-
-			var filter = {};
-
-			filter.url = exportFilter;
-
-			chrome.cookies.getAll(filter, function (cookieArray) {
-
-				var text = getCopyText(cookieArray);
-				var passwordValue = document.getElementById("passwordBoxExport").value;
-				document.getElementById("passwordBoxExport").value = "";
-				var encrypted = CryptoJS.AES.encrypt(text, passwordValue);
-				var textFile = null,
-				makeTextFile = function (text2) {
-					var data = new Blob([text2], {
-							type : 'text/plain'
-						});
-
-					// If we are replacing a previously generated file we need to
-					// manually revoke the object URL to avoid memory leaks.
-					if (textFile !== null) {
-						window.URL.revokeObjectURL(textFile);
-					}
-
-					textFile = window.URL.createObjectURL(data);
-
-					return textFile;
-				};
-
-				$("#downloadLink2").attr("download", tabs[0].url + "(encrypted).txt");
-				var link = document.getElementById('downloadLink2');
-				link.href = makeTextFile(encrypted);
-				link.style.display = 'block';
-			});
-		});
-	}
-	// EXPORTIMPORTPROFILE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	$('#exportProfile').click(function () {
-		//export
-		chrome.tabs.query({
-			currentWindow : true,
-			active : true
-		}, function (tabs) {
-
-			var exportFilter = tabs[0].url;
-			var filter = {};
-			filter.url = exportFilter;
-
-			chrome.cookies.getAll(filter, function (cookieArray) {
-				var lastProfileString = getCopyText(cookieArray);
-				chrome.storage.sync.set({
-					'lastProfile' : lastProfileString
-				}, function () {
-					$("#exportDialog p").text("Cookies have been successfully exported.");
-					$('#exportDialog').dialog("open");
-				});
-			});
-		});
-	});
-
-	$('#importProfile').click(function () { // restore last remove
-
-		chrome.storage.sync.get('lastProfile', function (results) {
-			if (results.lastProfile) {
-				var lastProfileString = results.lastProfile;
-				if (!chrome.extension.getBackgroundPage().isundefinednull(lastProfileString)) {
-					//import
-					try {
-						myImport(lastProfileString);
-						$('#importDialog p').text('Cookies have been successfully imported.');
-					} catch (err) {
-						$('#importDialog p').text(err);
-					}
-				}
-			} else {
-				$('#importDialog p').text('Unable to import from profile, did you export to profile first?');
-			}
-			$('#importDialog').dialog("open");
-		});
-	});
-
-	$('#clearProfileI').click(function () {
-
+	// CLEAR PROFILE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	$('.clearProfile').click(function(){
+		/*
+			works var dialogElement = $("div[id*='Dialog']").attr('id');
+			works var section = $(this).parent().parent().attr('id');
+			x work if combined: 
+				var dialogElement = $(this).parent().parent().find("div[id*='Dialog']").attr('id');
+		*/
+		var section = $(this).parent().parent().attr('id');
+		var dialogElement = '#' + ((section === 'importCookie')? 'importDialog':'exportDialog');
 		try {
 			chrome.storage.sync.remove('lastProfile');
-			$('#importDialog p').text('Synced cookies have been successfully cleared.');
+			$(dialogElement+' p').text('Synced cookies have been successfully cleared.');
 		} catch (err) {
-			$('#importDialog p').text(err);
+			$(dialogElement+' p').text(err);
 		}
-		$('#importDialog').dialog("open");
-	});
-
-	$('#clearProfileE').click(function () {
-
-		try {
-			chrome.storage.sync.remove('lastProfile');
-			$('#exportDialog p').text('Synced cookies have been successfully cleared.');
-		} catch (err) {
-			$('#exportDialog p').text(err);
-		}
-		$('#exportDialog').dialog("open");
+		$(dialogElement).dialog("open");
 	});
 });
