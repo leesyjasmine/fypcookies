@@ -39,10 +39,10 @@
             <li><a href="#help"><span>FAQ</span></a></li>
          </ul>
          <div id="removeCookie">
-            <h2>Remove Cookie</h2>
+            <h2><u>Remove Cookie</u></h2>
             <div class="removeCookieAuto">
                <h3>Auto Tab Remove 
-                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="autoRemoveHelp" title="Deletes all cookies when all TABS of a Domain closes.">
+                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="autoRemoveHelp" title="Deletes all cookies when all TABS of a domain closes.">
                </h3>
                <div id="autoTabRemove" class="autoRemoveOff">
                   <button id="autoTabRemoveButton">OFF</button>
@@ -64,21 +64,21 @@
             <div id="removeCookieManual">
                <h3>Manual Remove</h3>
                <h4>Remove Cookies</h4>
-               <input type="submit" id="manualRemoveShowCookies" value="Select Cookies"/>
-               <input type="submit" id="submitRemoveAll" value="Remove All"/>
+               <input type="submit" id="manualRemoveShowCookies" value="Select cookies"/>
+               <input type="submit" id="submitRemoveAll" value="Remove all"/>
                <div id ="chooseRemoveCookiesBox" class="treecheckbox"></div>
                </br>
-               <input type="submit" id="submitRemove" value="Remove Selected"/>
-			   <h4>Undo Last Remove</h4>
-			   <input type="submit" id="clearRemoveArchive" value="Clear Remove History"/>
-               <input type="submit" id="undoLastRemove" value="Undo Last Remove" />
+               <input type="submit" id="submitRemove" value="Remove selected"/>
+               <h4>Undo Last Remove</h4>
+               <input type="submit" id="clearRemoveArchive" value="Clear remove history"/>
+               <input type="submit" id="undoLastRemove" value="Undo last remove" />
             </div>
             <div>
                <p id="rStatus"></p>
             </div>
          </div>
          <div id="addCookie">
-            <h2>Add Cookie</h2>
+            <h2><u>Add Cookie</u></h2>
             <div>
                <p>Domain: <input type="text" class="compulsory" name="domain" class="ui-widget" placeholder="compulsory"></p>
                <p>Name: <input type="text" class="compulsory" name="name" placeholder="compulsory"></p>
@@ -102,7 +102,7 @@
             </div>
          </div>
          <div id="modifyCookie">
-            <h2>Modify Cookie</h2>
+            <h2><u>Modify Cookie</u></h2>
             <h3>Select a cookie to edit:</h3>
             <!--ACCORDION PANELS	-->	
             <div id="outerPanel">
@@ -139,60 +139,43 @@
             </div>
          </div>
          <div id="importCookie">
-            <h2>Import Cookie</h2>
+            <h2><u>Import Cookie</u></h2>
             <h4>Import cookie data from a file or paste it below:</h4>
             <input type="file" id="fileUpload">
             <br><br>
             <textarea rows="9" cols="55" id="jpaste" placeholder="Paste cookie data here"></textarea>
+            <h4>If required, enter password to decrypt the file:</h4>
+            Password: <input type="password" id="passwordBoxImport" placeholder ="optional"/>
             <br><br>
             <button id="submitImport">Import</button>
             <br><br>
-            <fieldset>
-               <h4>Chrome Sync must be enabled for this feature to work.</h4>
-               <button id="importProfile">Sync cookies from profile</button>
-               <button class="clearProfile">Clear synced cookies</button>
-               <br><br>
-            </fieldset>
-            <h4>If required, enter password for data decryption:</h4>
-            <fieldset>
-               <br>
-               Password: <input type="password" id="passwordBoxImport"/><br><br>
-               <button id="importEncrypt" disabled=true>Import encrypted cookie data</button>
-               <br><br>
-            </fieldset>
-            <div>
-               <p id="importstatus"></p>
-            </div>
-            <!--This is just a small text input/submit form. Backend code is still being integrated.-->
+            <hr>
+            <h3>Import cookies using Chrome Sync</h3>
+            You must be signed in to your <b>Google Account</b> and have <b>Extensions</b> checked under <b>Advanced sync settings</b> for Chrome Sync to work.
+            <br><br>
+            <button id="importProfile">Sync from Google Account</button>
+            <button class="clearProfile">Clear synced cookies</button>
             <div id="importDialog" title="Alert!">
                <p></p>
             </div>
          </div>
          <div id="exportCookie">
-            <h2>Export Cookie</h2>
-            <!-- add export cookie html here-->
-            <button id="exportClipboard">Copy to clipboard</button>
+            <h2><u>Export Cookie</u></h2>
+            <button id="exportClipboard">Export to clipboard</button>
+            <h4>Provide a password to encrypt the file (optional):</h4>
+            Password: <input type="password" id="passwordBoxExport" placeholder = "optional"/>
             <br><br>
             <button id="exportFile">Export to file</button>
             <br><br>
-            <center><a download="cookies.txt" id="downloadLink1" style="display: none">Click here to download cookie data</a></center>
+            <center><a download="" id="downloadLink1" style="display: none">Click here to download cookie data</a></center>
+            <center><a download="" id="downloadLink2" style="display: none">Click here to download encrypted cookie data</a></center>
             <br>
-            <fieldset>
-               <h4>Chrome Sync must be enabled for this feature to work.</h4>
-               <button id="exportProfile">Sync cookies to profile</button>
-               <button class="clearProfile">Clear synced cookies</button>
-               </br></br>
-            </fieldset>
-            <br>
-            <fieldset>
-               <h4>Provide a password for data encryption (optional):</h4>
-               Password: <input type="password" id="passwordBoxExport"/>
-               <br><br>
-               <button id="exportEncrypt" disabled=true>Export to encrypted file</button>
-               <br><br>
-               <center><a download="cookies.txt" id="downloadLink2" style="display: none">Click here to download encrypted cookie data</a></center>
-               <br>
-            </fieldset>
+            <hr>
+            <h3>Export cookies using Chrome Sync</h3>
+            You must be signed in to your <b>Google Account</b> and have <b>Extensions</b> checked under <b>Advanced sync settings</b> for this feature to work.
+            <br><br>
+            <button id="exportProfile">Sync to Google Account</button>
+            <button class="clearProfile">Clear synced cookies</button>
             <div id="exportDialog" title="Alert!">
                <p></p>
             </div>
