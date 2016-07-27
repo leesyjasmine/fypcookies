@@ -223,10 +223,10 @@ $(function () {
 		chrome.storage.local.get('lastRemove', function (results) {
 			var lastRemoveString = results.lastRemove;
 			if (chrome.extension.getBackgroundPage().isundefinednull(lastRemoveString)) {
-				resetManualRemove('Archive Is Empty');
+				resetManualRemove('Remove History is Empty');
 			} else {
 				clearUndo();
-				resetManualRemove('Archive Cleared Successfully');
+				resetManualRemove('Remove History Cleared Successfully');
 			}
 		});
 	});
@@ -704,31 +704,33 @@ $(function () {
 		var text = '';
 		text += '[' + '\n';
 		for (var i = 0; i < cookieArray.length; i++) {
+		  try{
+			var aText='';
 			var cookieUrl = 'http' + ((cookieArray[i].secure) ? 's' : '') + '://' + cookieArray[i].domain + cookieArray[i].path;
-			text += '{' + '\n';
+			aText += '{' + '\n';
 			//text += '    "url": "' + filter.url + '", \n';
-			text += '    "url": "' + cookieUrl + '", \n';
-			text += '    "domain": "' + cookieArray[i].domain + '", \n';
+			aText += '    "url": "' + cookieUrl + '", \n';
+			aText += '    "domain": "' + cookieArray[i].domain + '", \n';
 			if (typeof cookieArray[i].expirationDate !== "undefined") {
-				text += '    "expirationDate": ' + cookieArray[i].expirationDate + ', \n';
+				aText += '    "expirationDate": ' + cookieArray[i].expirationDate + ', \n';
 			}
-			text += '    "hostOnly": ' + cookieArray[i].hostOnly + ', \n';
-			text += '    "httpOnly": ' + cookieArray[i].httpOnly + ', \n';
-			text += '    "name": "' + cookieArray[i].name + '", \n';
-			text += '    "path": "' + cookieArray[i].path + '", \n';
-			text += '    "sameSite": "' + cookieArray[i].sameSite + '", \n';
-			text += '    "secure": ' + cookieArray[i].secure + ', \n';
-			text += '    "session": ' + cookieArray[i].session + ', \n';
-			text += '    "storeId": "' + cookieArray[i].storeId + '", \n';
-			text += '    "value": "' + cookieArray[i].value + '", \n';
-			text += '    "id": ' + (i + 1) + ' \n';
-			text += '}';
-			if (i + 1 < cookieArray.length) {
-				text += ',';
-			}
-			text += '\n';
+			aText += '    "hostOnly": ' + cookieArray[i].hostOnly + ', \n';
+			aText += '    "httpOnly": ' + cookieArray[i].httpOnly + ', \n';
+			aText += '    "name": "' + cookieArray[i].name + '", \n';
+			aText += '    "path": "' + cookieArray[i].path + '", \n';
+			aText += '    "sameSite": "' + cookieArray[i].sameSite + '", \n';
+			aText += '    "secure": ' + cookieArray[i].secure + ', \n';
+			aText += '    "session": ' + cookieArray[i].session + ', \n';
+			aText += '    "storeId": "' + cookieArray[i].storeId + '", \n';
+			aText += '    "value": "' + cookieArray[i].value + '", \n';
+			aText += '    "id": ' + (i + 1) + ' \n';
+			aText += '}';
+		  }catch(err){
+			continue;
+		  }
+			text += aText +',\n';
 		}
-		text += ']';
+		text = text.substring(0,text.length-2)+'\n]';
 		return text;
 	}
 	function toExport(option){

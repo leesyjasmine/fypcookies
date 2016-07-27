@@ -42,7 +42,7 @@
             <h2>Remove Cookie</h2>
             <div class="removeCookieAuto">
                <h3>Auto Tab Remove 
-                  <small><a class="autoRemoveHelp" href="" title="Deletes all cookies when all TABS of a Domain closes.">?</a></small>
+                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="autoRemoveHelp" title="Deletes all cookies when all TABS of a Domain closes.">
                </h3>
                <div id="autoTabRemove" class="autoRemoveOff">
                   <button id="autoTabRemoveButton">OFF</button>
@@ -50,7 +50,7 @@
             </div>
             <div class="removeCookieAuto">
                <h3>Auto Session Remove 
-                  <small><a class="autoRemoveHelp" href="" title="Deletes all cookies when BROWSER closes.">?</a></small>
+                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="autoRemoveHelp" title="Deletes all cookies when BROWSER closes.">
                </h3>
                <div id="autoRemove" class="autoRemoveOff">
                   <button id="autoRemoveButton">OFF</button>
@@ -61,18 +61,17 @@
             </div>
             <br>
             <hr>
-            <br>
             <div id="removeCookieManual">
                <h3>Manual Remove</h3>
-               <h4>Cookie Archive</h4>
-               <input type="submit" id="undoLastRemove" value="Undo Last Remove" />
-               <input type="submit" id="clearRemoveArchive" value="Clear Archive"/>
                <h4>Remove Cookies</h4>
                <input type="submit" id="manualRemoveShowCookies" value="Select Cookies"/>
                <input type="submit" id="submitRemoveAll" value="Remove All"/>
                <div id ="chooseRemoveCookiesBox" class="treecheckbox"></div>
                </br>
                <input type="submit" id="submitRemove" value="Remove Selected"/>
+			   <h4>Undo Last Remove</h4>
+			   <input type="submit" id="clearRemoveArchive" value="Clear Remove History"/>
+               <input type="submit" id="undoLastRemove" value="Undo Last Remove" />
             </div>
             <div>
                <p id="rStatus"></p>
@@ -80,10 +79,9 @@
          </div>
          <div id="addCookie">
             <h2>Add Cookie</h2>
-            <p><small>** compulsory</small></p>
             <div>
-               <p>Domain**: <input type="text" class="compulsory" name="domain" class="ui-widget"></p>
-               <p>Name**: <input type="text" class="compulsory" name="name"></p>
+               <p>Domain: <input type="text" class="compulsory" name="domain" class="ui-widget" placeholder="compulsory"></p>
+               <p>Name: <input type="text" class="compulsory" name="name" placeholder="compulsory"></p>
                <p>Value: </br><textarea name="value" cols=52 rows=6 class='textareaClass'></textarea></p>
                <p>Path: <input type="text" name="path" value="/" disabled /></p>
                <p>Lifetime:
