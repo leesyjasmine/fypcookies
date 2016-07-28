@@ -1,4 +1,3 @@
-/* JASMINE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 .defaultFont{
 	font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
 	font-size: small;
@@ -113,7 +112,6 @@
     max-width: 300px;   
 }
 
-/* MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /* Style the buttons that are used to open and close the accordion panel */
 button.accordion {
     background-color: #eee;
@@ -159,8 +157,3 @@ button.accordion:after {
 button.accordion.active:after {
     content: "\2796"; /* Unicode character for "minus" sign (-) */
 }
-
-/* ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-
-/* GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
