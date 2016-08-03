@@ -103,7 +103,7 @@
          </div>
          <div id="modifyCookie">
             <!--<h2><u>Modify Cookie</u></h2>-->
-            <h3>Select a cookie to edit:</h3>
+            <h3>Select a cookie to modify:</h3>
             <!--ACCORDION PANELS	-->	
             <div id="outerPanel">
                <!--grandparent-->
@@ -183,65 +183,78 @@
          </div>
          <div id="help">
             <!--<h1><u>FAQ</u></h1>-->
-            <h3>What is auto session remove?</h3>
+            <h3>What is Auto Tab Remove?</h3>
+            Cookies on the browser will be removed immediately when tabs of the same domain are closed.
+            <br>
+            <h3>What is Auto Session Remove?</h3>
             Cookies on the browser will be removed immediately when the browser is closed.
             <br><br>
-            The extension converts all currently existing cookies and also cookies 
-            added thereafter to session cookies. By its default definition, session cookies
+            Enabling this option converts all currently existing cookies and also cookies 
+            added thereafter to session cookies. Session cookies
             only last for the session and expire after you close the browser. 
-            <h3>What is manual remove and when should I use it?</h3>
-            Manual remove lets you select cookies from specific domains and delete them. 
-            <br><br>
-            It is useful when you find that you only want to remove some or all the cookies from a 
-            certain domain such as your Gmail or Facebook but want to retain the rest of the cookies.
-            <br><br>
-            <h3>What does the undo last remove button do?</h3>
-            If you find that you've accidentally removed cookies from the computer and want to
+            <h3>What is Manual Remove and when should I use it?</h3>
+            Manual Remove lets you select cookies from specific domains and delete them.
+            It is useful when you only want to remove some or all the cookies from a 
+            certain domain such as Gmail or Facebook but want to retain the rest of the cookies.
+            <br>
+            <h3>What does the Undo Last Remove button do?</h3>
+            If you've accidentally removed cookies from the computer and want to
             reverse the changes, this will let you do just that.
-            <br><br>
-            <h3>Why and how should I add cookies to Chrome? </h3>
+            <br>
+            <h3>Why and how should I add cookies to Chrome?</h3>
             Cookies are pieces of information stored locally on your computer by the websites that 
             you visit to keep track of who you are and other information about you.
             <br><br>
             You can add cookies with this extension if you know the values 
             that you want to include. For example, here are the different values that a cookie has. 
-            Values marked with * are mandatory when you are adding new cookies.<br><br>
-            <b>Domain*:</b> This is the domain of the cookie.
+            Note that domain and name values are mandatory when adding new cookies.<br><br>
+            <b>Domain:</b> This is the domain of the cookie.
             For example, if you are adding a cookie 
-            for Facebook, you can set this to www.facebook.com
+            for Facebook, you can set this to www.facebook.com.
             <br><br>
-            <b>Name*:</b> Cookies have a name value that identify it.
+            <b>Name:</b> Cookies have a name value that identifies it.
             <br><br>
             <b>Value:</b> These are the contents of the cookie and the information the server keeps on you. 
             <br><br>
             <b>Path:</b> Some cookies are path specific to a domain, which means that they are only used on
             some parts of the website. Not very common but is used by some sites.
             <br><br>
-            <b>Lifetime:</b> You can set the expiration of the cookie in three different ways. 
-            <br>- Select the date from a calendar style popup.
-            <br>- After many days it will expire from today.
-            <br>- Session (which will expire as soon as the browser is closed).
-            <br><br>
+            <b>Lifetime:</b> You can set the expiration of the cookie in three different ways:
+            <br>
+            <ul>
+               <li>Select the date from a calendar style popup.</li>
+               <li>Number of days that the cookie will expire in.</li>
+               <li>Session (which will expire as soon as the browser is closed).</li>
+            </ul>
             <b>Secure:</b> Cookies set with the secure flag will only be transmitted when there is a HTTPS 
             secure connection between the website and the user. In other words, the browser will prevent the transmission of a cookie
-            over an unencrypted channel.
+            over an unencrypted HTTP channel.
             <br><br>
-            <b>HttpOnly:</b> This is also another security property in cookies set by the website which helps mitigate the risk of 
-            client side script accessing the protected cookie. 
+            <b>HttpOnly:</b> This is another security property in cookies set by the website which helps mitigate the risk of 
+            client-side scripts accessing the protected cookie. 
+            <br>
+            <h3>Why and how should I modify existing cookies?</h3>
+            Cookies have several interesting properties. One of the more commonly modified values is the expiration date,
+            where you are able to specifically determine when a cookie expires. 
             <br><br>
+            For more advanced users such as developers, changing cookie values
+            can be a convenient way to troubleshoot website issues. 
+            <br>
             <h3>When should I import/export cookies?</h3>
             An example would be a time when you want to let a friend sign in to a website that you use
-            without giving that person your username and password. <br><br>
-            From the website that you would like to extract the cookie information from, choose the export tab. 
+            without giving that person your username and password. Or when you wish to transfer site info from one device to another.<br><br>
+            From the website that you would like to extract the cookie data from, choose the Export tab. 
             Then choose either copy to clipboard or export to file. 
             <br><br>
-            For exporting to file, you can also set a password which will be then used to encrypt the cookie 
+            For exporting to file, you can set an optional password which will be used to encrypt the cookie 
             information. This is useful if you are sending the file over an unencrypted channel where unauthorized parties
-            may be able to read the cookie file.
+            may be able to read the cookie data within.
+            <br><br>
+            You can also sync cookies to your Google Account, and later import them anywhere that you're signed in.
             <br><br>
             The steps are similar when importing the cookie data back in. 
             You can paste it from your clipboard,
-            or import the exported file. If it was password encrypted during the export, 
+            or import the exported cookie file. If it was password encrypted during the export, 
             you must enter the same password when importing it back in.
          </div>
       </div>

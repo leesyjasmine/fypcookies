@@ -1,5 +1,4 @@
 $(function () {
-	// JASMINE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//General http: //www.w3schools.com/js/js_cookies.asp
 	//https://developer.chrome.com/extensions/cookies#method-get
 	//https://developer.chrome.com/extensions/cookies
@@ -418,7 +417,7 @@ $(function () {
 		return dateFilledUp;
 	}
 
-	// MINGKAI++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//MODIFY===============================================
 	window.onload = getCurrentDomain;
 
 	function getCurrentDomain() {
@@ -570,7 +569,7 @@ $(function () {
 			});
 		});
 	}
-	// ACE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//IMPORT===============================================
 	//this is so that every file upload attempt is registered as a different one
 	document.getElementById("fileUpload").onclick = function () {
 		this.value = null;
@@ -678,7 +677,7 @@ $(function () {
 			$('#importDialog').dialog("open");
 		});
 	});
-	// GIAN+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//EXPORT===============================================
 	//http://stackoverflow.com/questions/18436245/how-to-fetch-url-of-current-tab-in-my-chrome-extention-using-javascript
 
 	$("#exportClipboard").click(function () {
@@ -823,7 +822,7 @@ $(function () {
 			'lastProfile' : text
 		});
 	}
-	// CLEAR PROFILE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//CLEAR PROFILE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	$('.clearProfile').click(function () {
 		/*
 		works var dialogElement = $("div[id*='Dialog']").attr('id');
