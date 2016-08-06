@@ -42,7 +42,7 @@
             <!--<h2><u>Remove Cookie</u></h2>-->
             <div class="removeCookieAuto">
                <h3>Auto Tab Remove 
-                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="autoRemoveHelp" title="Deletes all cookies when all TABS of a domain closes.">
+                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="tooltiphelp" title="Deletes all cookies when all TABS of a domain closes.">
                </h3>
                <div id="autoTabRemove" class="autoRemoveOff">
                   <button id="autoTabRemoveButton">OFF</button>
@@ -50,13 +50,10 @@
             </div>
             <div class="removeCookieAuto">
                <h3>Auto Session Remove 
-                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="autoRemoveHelp" title="Deletes all cookies when BROWSER closes.">
+                  <img src="help.png" alt=" ? "  style="width:16px;height:16px;" class="tooltiphelp" title="Deletes all cookies when BROWSER closes. All cookies will be set as session cookies.">
                </h3>
                <div id="autoRemove" class="autoRemoveOff">
                   <button id="autoRemoveButton">OFF</button>
-               </div>
-               <div id="autoRemoveConfirm" title="Are You Sure?">
-                  <p>All Cookies Will Be Set As Session Cookies.<br>This move is irreversible.</p>
                </div>
             </div>
             <br><br>
@@ -140,43 +137,52 @@
          </div>
          <div id="importCookie">
             <!--<h2><u>Import Cookie</u></h2>-->
-            <h4>Import cookie data from a file or paste it below:</h4>
-            <input type="file" id="fileUpload">
-            <br><br>
+            <h4>Paste cookie data below or import from a file:</h4>
+            
             <textarea rows="9" cols="55" id="jpaste" placeholder="Paste cookie data here"></textarea>
-            <h4>If required, enter password to decrypt the file:</h4>
+            <br><br>
+			<input type="file" id="fileUpload">
+            <br>
+			<h4>If required, enter password to decrypt the file:</h4>
             Password: <input type="password" id="passwordBoxImport" placeholder ="optional"/>
             <br><br>
             <button id="submitImport">Import</button>
             <br><br>
             <hr>
             <h3>Import cookies using Chrome Sync</h3>
-            You must be signed in to your <b>Google Account</b> and have <b>Extensions</b> checked under <b>Advanced sync settings</b> for Chrome Sync to work.
-            <br><br>
-            <button id="importProfile">Sync from Google Account</button>
-            <button class="clearProfile">Clear synced cookies</button>
+			<div class="profilestyle">
+				<p><strong>Sign in to Chrome to enable this feature.</strong></p>
+				<button id="importProfile" disabled>Sync from Google Account</button>
+				<button class="clearProfile" disabled>Clear synced cookies</button>
+				<p hidden class='tooltiphelp' title='Ensure that the Extensions checkbox is ticked under Advanced sync settings for Chrome Sync to work.'><small><i>Not working?</i></small></p>
+			</div>
             <div id="importDialog" title="Alert!">
                <p></p>
             </div>
          </div>
          <div id="exportCookie">
-            <br>
             <!--<h2><u>Export Cookie</u></h2>-->
-            <button id="exportClipboard">Export to clipboard</button>
+			<h3>Copy to clipboard</h3>
+            <button id="exportClipboard">Copy</button>
+			<br><br>
+			<hr>
+			<h3>Export to file</h3>
             <h4>Provide a password to encrypt the file (optional):</h4>
             Password: <input type="password" id="passwordBoxExport" placeholder = "optional"/>
             <br><br>
-            <button id="exportFile">Export to file</button>
+            <button id="exportFile">Export</button>
             <br><br>
             <center><a download="" id="downloadLink1" style="display: none">Click here to download cookie data</a></center>
             <center><a download="" id="downloadLink2" style="display: none">Click here to download encrypted cookie data</a></center>
             <br>
             <hr>
             <h3>Export cookies using Chrome Sync</h3>
-            You must be signed in to your <b>Google Account</b> and have <b>Extensions</b> checked under <b>Advanced sync settings</b> for Chrome Sync to work.
-            <br><br>
-            <button id="exportProfile">Sync to Google Account</button>
-            <button class="clearProfile">Clear synced cookies</button>
+            <div class="profilestyle">
+				<p><strong>Sign in to Chrome to enable this feature.</strong></p>
+				<button id="exportProfile" disabled>Sync to Google Account</button>
+				<button class="clearProfile" disabled>Clear synced cookies</button>
+				<p hidden class='tooltiphelp' title='Ensure that the Extensions checkbox is ticked under Advanced sync settings for Chrome Sync to work.'><small><i>Not working?</i></small></p>
+			</div>
             <div id="exportDialog" title="Alert!">
                <p></p>
             </div>

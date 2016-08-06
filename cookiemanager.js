@@ -7,8 +7,10 @@ $(function () {
 
 	//INITIALISATION*******************************************************
 	$("#tabs").tabs();
+	$('.tooltiphelp').tooltip();
 	restoreSessionOptions();
 	restoreTabOptions();
+	profileInitialization();
 	//SAVE A SESSION OPTIONS************************************************
 	function saveSessionOptions(option) {
 		chrome.storage.sync.set({
@@ -45,7 +47,6 @@ $(function () {
 		}
 	});
 	//REMOVE====================================================
-	$('.autoRemoveHelp').tooltip();
 	//AUTO REMOVE TOGGLE BUTTONS----------------------
 	function setAutoButton(ele, buttonText) {
 		$(ele).find('button').text(buttonText);
@@ -79,22 +80,7 @@ $(function () {
 			chrome.extension.getBackgroundPage().removeSessionListener();
 			saveSessionOptions(false);
 		} else if (status === 'OFF') {
-			$('#autoRemoveConfirm').dialog('open');
-		}
-	});
-	$('#autoRemoveConfirm').dialog({
-		autoOpen : false,
-		resizable : false,
-		height : 178,
-		modal : true,
-		buttons : {
-			'YES' : function () {
-				$(this).dialog("close");
 				setOnSession();
-			},
-			'NO' : function () {
-				$(this).dialog("close");
-			}
 		}
 	});
 	function setOnSession() {
@@ -570,18 +556,13 @@ $(function () {
 		});
 	}
 	//IMPORT===============================================
-	//this is so that every file upload attempt is registered as a different one
-	document.getElementById("fileUpload").onclick = function () {
-		this.value = null;
-	};
 	document.getElementById("fileUpload").onchange = function () {
-		document.getElementById("jpaste").innerHTML = "";
+		$('#jpaste').val('');
 		var file = this.files[0];
 		var reader = new FileReader();
 		if (file.type.match(/text.*/)) {
 			reader.onload = function () {
-				// Entire file
-				document.getElementById("jpaste").innerHTML = this.result;
+				$('#jpaste').val(this.result);	
 			}
 			reader.readAsText(file);
 		} else {
@@ -633,7 +614,7 @@ $(function () {
 			$('#importDialog p').text(err);
 		}
 		$('#importDialog').dialog("open");
-		document.getElementById("jpaste").innerHTML = "";
+		$('#jpaste').val('');
 		$('#fileUpload').val('');
 	}
 	function myImport(z) {
@@ -823,6 +804,20 @@ $(function () {
 		});
 	}
 	//CLEAR PROFILE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	function profileInitialization(){
+		chrome.identity.getProfileUserInfo(function(userInfo) {
+			if (!chrome.extension.getBackgroundPage().isundefinednull(userInfo.email)){
+				//enable button and show synchro reminder
+				$('.profilestyle').find('p').each(function(){
+					var toHide = (($(this).attr('hidden') === 'hidden')? false:true);
+					$(this).attr('hidden',toHide);
+				});
+				$('.profilestyle').find(':button').each(function(){
+					$(this).attr('disabled',false);
+				});
+			}
+		});
+	}
 	$('.clearProfile').click(function () {
 		/*
 		works var dialogElement = $("div[id*='Dialog']").attr('id');
@@ -830,7 +825,7 @@ $(function () {
 		x work if combined:
 		var dialogElement = $(this).parent().parent().find("div[id*='Dialog']").attr('id');
 		 */
-		var section = $(this).parent().parent().attr('id');
+		var section = $(this).parent().parent().parent().attr('id');
 		var dialogElement = '#' + ((section === 'importCookie') ? 'importDialog' : 'exportDialog');
 		try {
 			chrome.storage.sync.remove('lastProfile');

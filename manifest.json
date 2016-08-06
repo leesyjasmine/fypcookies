@@ -17,6 +17,7 @@
     "activeTab",
 	"cookies",
 	"identity",
+	"identity.email",
 	"unlimitedStorage",
 	"notifications",
 	"<all_urls>"
