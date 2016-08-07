@@ -34,7 +34,6 @@ function clearByDomain(domain){
 					for (var i = 0; i < cookieArray.length; i++){
 						var remCookie = copyAsRemoveCookie(cookieArray[i]);
 						chrome.cookies.remove(remCookie);	
-						removed = true;
 					}
 				}
 			});
