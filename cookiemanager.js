@@ -1,17 +1,25 @@
 $(function () {
-	//General http: //www.w3schools.com/js/js_cookies.asp
-	//https://developer.chrome.com/extensions/cookies#method-get
-	//https://developer.chrome.com/extensions/cookies
-	//https://developer.chrome.com/extensions/webRequest
-	//https://www.chromium.org/developers/design-documents/extensions/proposed-changes/apis-under-development/proposal-chrome-extensions-cookies-api
+/*
+	//JQuery UI is 1.11.4 version
+	//JQuery is 1.12.3 version
+	Resources / References:
+	1. AES: Stanford Javascript Crypto Library
+	2. JQuery Plugin: 	Datetimepicker
+         				http: //xdsoft.net/jqplugins/datetimepicker/
+	3. JQuery Plugin: 	Multi-Selectable Tree Structure
+         				http://www.jqueryscript.net/form/jQuery-Plugin-For-Multi-Selectable-Tree-Structure-Tree-Multiselect.html
+	4. Cookie free icon: Icon made by Freepik from www.flaticon.com is licensed by CC 3.0
+	5. Calendar free icon: Icon made by Zlatko Najdenovski http://pixelbazaar.com from https://www.iconfinder.com/icons/809622/calendar_date_office_icon#size=128
+	6. Round help button free icon: Icon made by Freepik from www.flaticon.com is licensed by CC 3.0
 
-	//INITIALISATION*******************************************************
+*/
+	//INITIALISATION*****************************************************
 	$("#tabs").tabs();
 	$('.tooltiphelp').tooltip();
 	restoreSessionOptions();
 	restoreTabOptions();
 	profileInitialization();
-	//SAVE A SESSION OPTIONS************************************************
+	//SAVE A SESSION OPTIONS*********************************************
 	function saveSessionOptions(option) {
 		chrome.storage.sync.set({
 			'inSession' : option
@@ -40,12 +48,27 @@ $(function () {
 			}
 		});
 	}
-	//LAST REMOVE OPTIONS************************************************
+	//LAST REMOVE OPTIONS***********************************************
 	chrome.storage.local.get('lastRemove', function (results) {
 		if (chrome.extension.getBackgroundPage().isundefinednull(results.lastRemove)) {
 			$('#undoLastRemove').attr('disabled', true);
 		}
 	});
+	//CHECK LOGIN STATUS OF CHROME ACCOUNT******************************
+	function profileInitialization(){
+		chrome.identity.getProfileUserInfo(function(userInfo) {
+			if (!chrome.extension.getBackgroundPage().isundefinednull(userInfo.email)){
+				//enable button and show synchro reminder
+				$('.profilestyle').find('p').each(function(){
+					var toHide = (($(this).attr('hidden') === 'hidden')? false:true);
+					$(this).attr('hidden',toHide);
+				});
+				$('.profilestyle').find(':button').each(function(){
+					$(this).attr('disabled',false);
+				});
+			}
+		});
+	}
 	//REMOVE====================================================
 	//AUTO REMOVE TOGGLE BUTTONS----------------------
 	function setAutoButton(ele, buttonText) {
@@ -804,20 +827,6 @@ $(function () {
 		});
 	}
 	//CLEAR PROFILE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	function profileInitialization(){
-		chrome.identity.getProfileUserInfo(function(userInfo) {
-			if (!chrome.extension.getBackgroundPage().isundefinednull(userInfo.email)){
-				//enable button and show synchro reminder
-				$('.profilestyle').find('p').each(function(){
-					var toHide = (($(this).attr('hidden') === 'hidden')? false:true);
-					$(this).attr('hidden',toHide);
-				});
-				$('.profilestyle').find(':button').each(function(){
-					$(this).attr('disabled',false);
-				});
-			}
-		});
-	}
 	$('.clearProfile').click(function () {
 		/*
 		works var dialogElement = $("div[id*='Dialog']").attr('id');
