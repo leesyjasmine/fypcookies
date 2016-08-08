@@ -1,18 +1,18 @@
 $(function () {
-/*
+	/*
 	//JQuery UI is 1.11.4 version
 	//JQuery is 1.12.3 version
 	Resources / References:
 	1. AES: Stanford Javascript Crypto Library
 	2. JQuery Plugin: 	Datetimepicker
-         				http: //xdsoft.net/jqplugins/datetimepicker/
+	http: //xdsoft.net/jqplugins/datetimepicker/
 	3. JQuery Plugin: 	Multi-Selectable Tree Structure
-         				http://www.jqueryscript.net/form/jQuery-Plugin-For-Multi-Selectable-Tree-Structure-Tree-Multiselect.html
+	http://www.jqueryscript.net/form/jQuery-Plugin-For-Multi-Selectable-Tree-Structure-Tree-Multiselect.html
 	4. Cookie free icon: Icon made by Freepik from www.flaticon.com is licensed by CC 3.0
 	5. Calendar free icon: Icon made by Zlatko Najdenovski http://pixelbazaar.com from https://www.iconfinder.com/icons/809622/calendar_date_office_icon#size=128
 	6. Round help button free icon: Icon made by Freepik from www.flaticon.com is licensed by CC 3.0
 
-*/
+	 */
 	//INITIALISATION*****************************************************
 	$("#tabs").tabs();
 	$('.tooltiphelp').tooltip();
@@ -55,16 +55,16 @@ $(function () {
 		}
 	});
 	//CHECK LOGIN STATUS OF CHROME ACCOUNT******************************
-	function profileInitialization(){
-		chrome.identity.getProfileUserInfo(function(userInfo) {
-			if (!chrome.extension.getBackgroundPage().isundefinednull(userInfo.email)){
+	function profileInitialization() {
+		chrome.identity.getProfileUserInfo(function (userInfo) {
+			if (!chrome.extension.getBackgroundPage().isundefinednull(userInfo.email)) {
 				//enable button and show synchro reminder
-				$('.profilestyle').find('p').each(function(){
-					var toHide = (($(this).attr('hidden') === 'hidden')? false:true);
-					$(this).attr('hidden',toHide);
+				$('.profilestyle').find('p').each(function () {
+					var toHide = (($(this).attr('hidden') === 'hidden') ? false : true);
+					$(this).attr('hidden', toHide);
 				});
-				$('.profilestyle').find(':button').each(function(){
-					$(this).attr('disabled',false);
+				$('.profilestyle').find(':button').each(function () {
+					$(this).attr('disabled', false);
 				});
 			}
 		});
@@ -103,7 +103,7 @@ $(function () {
 			chrome.extension.getBackgroundPage().removeSessionListener();
 			saveSessionOptions(false);
 		} else if (status === 'OFF') {
-				setOnSession();
+			setOnSession();
 		}
 	});
 	function setOnSession() {
@@ -585,7 +585,7 @@ $(function () {
 		var reader = new FileReader();
 		if (file.type.match(/text.*/)) {
 			reader.onload = function () {
-				$('#jpaste').val(this.result);	
+				$('#jpaste').val(this.result);
 			}
 			reader.readAsText(file);
 		} else {
@@ -662,21 +662,20 @@ $(function () {
 			throw "Import error: Format not recognized";
 		}
 	}
-	$('#importProfile').click(function () { // restore last remove
+	$('#importProfile').click(function () {
 		chrome.storage.sync.get('lastProfile', function (results) {
 			if (results.lastProfile) {
 				var lastProfileString = results.lastProfile;
 				if (!chrome.extension.getBackgroundPage().isundefinednull(lastProfileString)) {
-					//import
 					try {
 						myImport(lastProfileString);
-						$('#importDialog p').text('Cookies have been successfully imported.');
+						$('#importDialog p').text('Synced cookies have been successfully imported from Google Account.');
 					} catch (err) {
 						$('#importDialog p').text(err);
 					}
 				}
 			} else {
-				$('#importDialog p').text('Unable to import from profile, did you export to profile first?');
+				$('#importDialog p').text('Import unsuccessful, did you export to Google Account first?');
 			}
 			$('#importDialog').dialog("open");
 		});
@@ -696,7 +695,7 @@ $(function () {
 	});
 
 	$("#exportProfile").click(function () {
-		toExport("profile");
+		toExport("Google Account");
 	});
 
 	//previously used for input check before enabling button
@@ -764,13 +763,13 @@ $(function () {
 			chrome.cookies.getAll(filter, function (cookieArray) {
 				var text = getCopyText(cookieArray);
 				try {
-					if (option === "clipboard") // to clipboard
+					if (option === "clipboard")
 						toClipboard(text);
-					else if (option === "file") // to file
+					else if (option === "file")
 						toFile(text, 'downloadLink1', exportFilter);
-					else if (option === "encrypted file") // to file w pw
+					else if (option === "encrypted file")
 						toFile(getEncrypted(text), 'downloadLink2', exportFilter);
-					else if (option === "profile")
+					else if (option === "Google Account")
 						toProfile(text);
 					$("#exportDialog p").text("Cookies from " + cookieArray[0].domain + " successfully exported to " + option + ".");
 				} catch (err) {
