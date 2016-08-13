@@ -4,7 +4,6 @@
   "name": "Cookie Boss",
   "description": "Manage your cookies like a boss.",
   "version": "4.0",
-  "key" : "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvkQyBnjWxb1JtqtG2bXeULKMS9cqUUB9FVXT0AZefiMlUIFTHYCs7eZffL1sg87dLIxMOFs+aJvKdVfpfyAvlmp9hMVljD/dscCFjYd4dS0B6cojGOrWCEwCRu7HvH5lXFmsVKh07M2dRTsv0mDKXcpV6fE3ZMc3vEAlCevY4E+J4LxjVM1Ge9fDqn1wOyiJf3LvDLma8GQUjyi7b3SHEriHXBGrFOmWzhGhffwOYHTH8kPWmEiQr6U2b7wN/Cfq7SFRfXlZiJwV0WC0ScykCmnAb7fEdnhnFdQOare6ghUaK3dxmQ4pNT/o3CgCsHyhrFgpNt2UQgRRh9DgCw1h8wIDAQAB",
   "icons": { "16": "icon.png", "48": "icon.png", "128": "icon.png"},
   "browser_action": {
     "default_icon": "icon.png",
